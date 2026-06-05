@@ -1,71 +1,84 @@
 /**
- * Extract table data from a section identified by its id.
- * Handles DataTables split-render (thead in dt-scroll-head, tbody in dt-scroll-body).
+ * Generic section-table extractor.
+ * Falls back to the generic approach for pages without Tijori's specific structure.
  */
 async function extractSectionTable(page, sectionId) {
   return page.evaluate((sectionId) => {
     const section = document.getElementById(sectionId);
     if (!section) return { rows: [], headers: [], error: `No section #${sectionId}` };
 
-    // DataTables splits into separate scroll areas — headers in dt-scroll-head, body in dt-scroll-body
-    // Try to grab headers from the head scroll area first
-    const headTable = section.querySelector('.dt-scroll-head table, .dataTables_scrollHead table');
-    const bodyTable = section.querySelector('.dt-scroll-body table, .dataTables_scrollBody table');
+    // --- Period headers from the thead ---
+    const headTable = section.querySelector('.dt-scroll-head table, .dataTables_scrollHead table, thead');
+    const allHeadCells = headTable
+      ? Array.from(headTable.querySelectorAll('thead th, thead td'))
+      : [];
+    const periodHeaders = allHeadCells.map(th => th.textContent.trim()).filter(h => h.length > 0);
 
-    // Fallback: if no DataTables structure, just pick the table with most rows
-    const allTables = Array.from(section.querySelectorAll('table'));
-    const targetBodyTable = bodyTable ?? allTables.reduce(
-      (best, t) => (t.querySelectorAll('tbody tr').length > best.querySelectorAll('tbody tr').length ? t : best),
-      allTables[0] ?? document.createElement('table')
-    );
-    const targetHeadTable = headTable ?? targetBodyTable;
+    // --- Body rows ---
+    const bodyTable = section.querySelector('.dt-scroll-body table, .dataTables_scrollBody table') ??
+      section.querySelector('table');
+    if (!bodyTable) return { rows: [], headers: periodHeaders };
 
-    // Extract all header cells
-    const rawHeaders = Array.from(targetHeadTable.querySelectorAll('thead th, thead td'))
-      .map(th => th.textContent.trim());
+    const rows = Array.from(bodyTable.querySelectorAll('tbody tr')).flatMap(tr => {
+      // --- Metric label ---
+      // Prefer the dedicated nameofmetriccol div (Tijori macro/market pages)
+      const labelDiv = tr.querySelector('.nameofmetriccol');
+      const label = labelDiv
+        ? labelDiv.textContent.trim()
+        : tr.querySelector('.firstcol, td:first-child')?.textContent.trim();
 
-    // Find the first non-empty header — that's where date/period columns start.
-    // Columns before it (empty-header columns) are the metric label and sub-label.
-    const firstDataColIdx = rawHeaders.findIndex(h => h.length > 0);
-    const periodHeaders = firstDataColIdx >= 0 ? rawHeaders.slice(firstDataColIdx) : rawHeaders;
+      if (!label) return [];
 
-    // Extract rows — treat the first non-empty cell as the metric name,
-    // then map remaining cells to period headers.
-    const rows = Array.from(targetBodyTable.querySelectorAll('tbody tr'))
-      .map(tr => {
-        const cells = Array.from(tr.querySelectorAll('td, th')).map(td => td.textContent.trim().replace(/\s+/g, ' '));
-        if (cells.every(c => !c)) return null;
+      // --- Unit (from data-unit attribute on the label div) ---
+      const unit = labelDiv?.dataset?.unit ?? null;
 
-        // The metric label is the first cell regardless of its header name
-        const metric = cells[0] || null;
-        if (!metric) return null;
+      // --- Hierarchy depth from parent attribute ---
+      // parent="0" = top-level category header, parent="1"+ = actual metric rows
+      const parentAttr = tr.getAttribute('parent');
+      const depth = parentAttr !== null ? parseInt(parentAttr, 10) : null;
 
-        // Data values start after the label column(s)
-        const dataOffset = firstDataColIdx >= 0 ? firstDataColIdx : 1;
-        const row = { metric };
-        cells.slice(dataOffset).forEach((cell, i) => {
-          const header = periodHeaders[i];
-          if (header) row[header] = cell;
+      // --- Data values: all numericvalue cells (including emptycol for alignment), skip yoy_graph ---
+      // emptycol cells are empty-month placeholders — include them so indices align with period headers
+      const dataCells = tr.querySelectorAll('td.numericvalue, td.knowledge.numericvalue');
+
+      // If Tijori-specific cells found, use them; otherwise fall back to all td text
+      let values;
+      if (dataCells.length > 0) {
+        values = Array.from(dataCells).map(td => {
+          const raw = td.textContent.trim().replace(/\s+/g, ' ');
+          // Convert em-dash placeholders to null for cleaner output
+          return raw === '—' || raw === '-' || raw === '' ? null : raw;
         });
-        return row;
-      })
-      .filter(Boolean);
+      } else {
+        // Generic fallback for non-macro pages (raw materials, markets)
+        const allCells = Array.from(tr.querySelectorAll('td, th')).map(td => td.textContent.trim().replace(/\s+/g, ' '));
+        values = allCells.slice(1); // skip label column
+      }
+
+      const row = { metric: label };
+      if (unit) row.unit = unit;
+      if (depth !== null) row.depth = depth;
+
+      values.forEach((val, i) => {
+        const header = periodHeaders[i];
+        if (header) row[header] = val;
+      });
+
+      return [row];
+    });
 
     return { headers: ['metric', ...periodHeaders], rows };
   }, sectionId);
 }
 
 export async function parseRawMaterials(page, tab) {
-  // tab: 'chemicals' | 'spreads' | 'metals'
   return extractSectionTable(page, tab);
 }
 
 export async function parseMacroIndicators(page, tab) {
-  // tab: 'industry' | 'demand' | 'gdp'
   return extractSectionTable(page, tab);
 }
 
 export async function parseMarkets(page, tab) {
-  // tab: 'headline' | 'niche' | 'conglomerates'
   return extractSectionTable(page, tab);
 }
