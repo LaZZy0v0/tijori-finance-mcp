@@ -20,22 +20,38 @@ async function extractSectionTable(page, sectionId) {
     );
     const targetHeadTable = headTable ?? targetBodyTable;
 
-    // Extract headers
-    const headers = Array.from(targetHeadTable.querySelectorAll('thead th, thead td'))
+    // Extract all header cells
+    const rawHeaders = Array.from(targetHeadTable.querySelectorAll('thead th, thead td'))
       .map(th => th.textContent.trim());
 
-    // Extract rows
+    // Find the first non-empty header — that's where date/period columns start.
+    // Columns before it (empty-header columns) are the metric label and sub-label.
+    const firstDataColIdx = rawHeaders.findIndex(h => h.length > 0);
+    const periodHeaders = firstDataColIdx >= 0 ? rawHeaders.slice(firstDataColIdx) : rawHeaders;
+
+    // Extract rows — treat the first non-empty cell as the metric name,
+    // then map remaining cells to period headers.
     const rows = Array.from(targetBodyTable.querySelectorAll('tbody tr'))
       .map(tr => {
         const cells = Array.from(tr.querySelectorAll('td, th')).map(td => td.textContent.trim().replace(/\s+/g, ' '));
         if (cells.every(c => !c)) return null;
-        const row = {};
-        cells.forEach((cell, i) => { row[headers[i] ?? `col${i}`] = cell; });
+
+        // The metric label is the first cell regardless of its header name
+        const metric = cells[0] || null;
+        if (!metric) return null;
+
+        // Data values start after the label column(s)
+        const dataOffset = firstDataColIdx >= 0 ? firstDataColIdx : 1;
+        const row = { metric };
+        cells.slice(dataOffset).forEach((cell, i) => {
+          const header = periodHeaders[i];
+          if (header) row[header] = cell;
+        });
         return row;
       })
       .filter(Boolean);
 
-    return { headers, rows };
+    return { headers: ['metric', ...periodHeaders], rows };
   }, sectionId);
 }
 
