@@ -12,8 +12,9 @@ export async function resolveCompanyIds(slug) {
     let sectorId = null;
 
     // Capture sector_id from the op-metrics AJAX URL that fires on page load
+    // Real URL pattern: /api/v1/ind/company_op_metrics/{companyId}/{sectorId}/
     page.on('request', req => {
-      const match = req.url().match(/\/op-metrics\/(\d+)\//);
+      const match = req.url().match(/\/company_op_metrics\/\d+\/(\d+)\//);
       if (match) sectorId = parseInt(match[1], 10);
     });
 
@@ -29,8 +30,8 @@ export async function resolveCompanyIds(slug) {
       throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
     }
 
-    // Wait for AJAX calls to fire (op-metrics is deferred)
-    await page.waitForTimeout(3000);
+    // Wait for AJAX calls to fire (op-metrics is deferred after page load)
+    await page.waitForTimeout(5000);
 
     // Extract company_id from inline script JSON blob
     const companyId = await page.evaluate(() => {
