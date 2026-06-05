@@ -9,14 +9,16 @@ export async function resolveCompanyIds(slug) {
   if (cached) return cached;
 
   const result = await withPage(async (page) => {
-    let sectorId = null;
-
-    // Capture sector_id from the op-metrics AJAX URL that fires on page load
-    // Real URL pattern: /api/v1/ind/company_op_metrics/{companyId}/{sectorId}/
-    page.on('request', req => {
+    // Set up waitForRequest BEFORE navigation — this actively waits for the
+    // op-metrics request rather than passively listening (which can miss it).
+    // Real URL: /api/v1/ind/company_op_metrics/{companyId}/{sectorId}/
+    const sectorIdPromise = page.waitForRequest(
+      req => /\/company_op_metrics\/\d+\/\d+\//.test(req.url()),
+      { timeout: 12000 }
+    ).then(req => {
       const match = req.url().match(/\/company_op_metrics\/\d+\/(\d+)\//);
-      if (match) sectorId = parseInt(match[1], 10);
-    });
+      return match ? parseInt(match[1], 10) : null;
+    }).catch(() => null); // returns null if request never fires within 12s
 
     const response = await page.goto(`${BASE_URL}/company/${slug}/`, {
       waitUntil: 'load',
@@ -30,8 +32,16 @@ export async function resolveCompanyIds(slug) {
       throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
     }
 
-    // Wait for AJAX calls to fire (op-metrics is deferred after page load)
-    await page.waitForTimeout(5000);
+    // Scroll down to trigger any intersection-observer lazy loads
+    await page.evaluate(async () => {
+      for (let y = 0; y < 2000; y += 400) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }).catch(() => {});
+
+    // Wait for the op-metrics request (promise started before navigation)
+    const sectorId = await sectorIdPromise;
 
     // Extract company_id from inline script JSON blob
     const companyId = await page.evaluate(() => {
@@ -45,7 +55,7 @@ export async function resolveCompanyIds(slug) {
 
     if (!companyId) throw new Error(`Could not extract company_id for slug: ${slug}`);
 
-    // Extract symbol and name while we're here
+    // Extract symbol and name
     const meta = await page.evaluate(() => {
       const scripts = Array.from(document.querySelectorAll('script:not([src])'));
       for (const s of scripts) {
