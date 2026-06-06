@@ -35,6 +35,11 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 ---
 
+> *"The goal is to turn data into information, and information into insight."*
+> — Carly Fiorina
+
+---
+
 ## In Action
 
 ### 1 — Cross-tool deep dive: Titan
