@@ -1,25 +1,25 @@
 {
-  "name": "mcp_screeenr",
+  "name": "tijori-finance-mcp",
   "version": "1.0.0",
   "type": "module",
-  "main": "discover.js",
-  "scripts": {
-    "discover": "node discover.js",
-    "explore": "node explore.js",
-    "explore2": "node explore2.js",
-    "explore3": "node explore3.js",
-    "mcp": "node src/index.js",
-    "test:auth": "node test/auth.test.js",
-    "test:search": "node test/search.test.js",
-    "test:financials": "node test/financials.test.js",
-    "test:shareholding": "node test/shareholding.test.js",
-    "test:metrics": "node test/metrics.test.js",
-    "test:market": "node test/market.test.js"
-  },
-  "keywords": [],
-  "author": "",
+  "description": "MCP server for Tijori Finance — search, financials, operational metrics, revenue mix, market share, knowledge base and more for Indian equities.",
+  "author": "Vedant Rajmane",
   "license": "ISC",
-  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium && node discover.js",
+    "auth": "node discover.js",
+    "reauth": "node discover.js --reauth",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "finance",
+    "india",
+    "stocks",
+    "tijori",
+    "claude"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cheerio": "^1.2.0",

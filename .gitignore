@@ -1,0 +1,7 @@
+node_modules/
+.env
+output/
+
+# debug/explore scripts (dev only)
+explore*.js
+debug_*.js
