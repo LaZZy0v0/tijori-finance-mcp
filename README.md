@@ -1,9 +1,6 @@
 <div align="center">
 
-<!-- HERO BANNER -->
-<!-- Replace with: docs/banner.png — see Gemini prompt at bottom of this file -->
-<!-- Recommended: 1280x640px, dark background, India skyline + data viz aesthetic -->
-![Tijori Finance MCP](https://placehold.co/1280x400/0f172a/f97316?text=Tijori+Finance+MCP&font=montserrat)
+![Tijori Finance MCP](docs/Hero.png)
 
 # Tijori Finance MCP
 
@@ -209,9 +206,7 @@ A browser window opens — log in manually and you're back.
 
 The server uses [Playwright](https://playwright.dev) to maintain an authenticated browser session with Tijori Finance. Each tool navigates to the relevant page or calls the underlying API, parses the response, and returns structured JSON to Claude. Results are cached in-memory (6 hours for financials, 30 minutes for metrics) to keep things fast.
 
-<!-- ARCHITECTURE DIAGRAM -->
-<!-- Replace with: docs/architecture.png — see Gemini prompt at bottom of this file -->
-<!-- Show: Claude → MCP Server → Playwright browser → Tijori Finance, with cache layer -->
+![Architecture](docs/Arch.png)
 
 ---
 
@@ -227,36 +222,3 @@ This project is not affiliated with Tijori Finance. It requires your own paid Ti
 
 </div>
 
----
-
-<details>
-<summary><strong>Image generation prompts (Gemini / Imagen)</strong></summary>
-
-**Hero banner** (`docs/banner.png`, 1280×400px):
-```
-A wide cinematic banner for a developer tool called "Tijori Finance MCP". Dark navy background (#0f172a). 
-On the left, a glowing abstract visualization of stock market data — candlestick charts, line graphs, 
-numbers flowing — in orange and blue tones. On the right, subtle outlines of the Mumbai skyline. 
-In the center, clean modern sans-serif text "Tijori Finance MCP" in white. 
-Tagline below in smaller text: "India's first MCP server for Indian equity research". 
-Professional fintech aesthetic, no people, no logos.
-```
-
-**Architecture diagram** (`docs/architecture.png`, 900×400px):
-```
-A clean minimal technical architecture diagram on a dark (#0f172a) background. 
-Four boxes connected with arrows left to right: 
-1. "Claude" (purple box with Anthropic logo style), 
-2. "MCP Server" (blue box, Node.js), 
-3. "Playwright Browser" (green box), 
-4. "Tijori Finance" (orange box). 
-A "Cache" cylinder below the MCP Server box connected with a bidirectional arrow. 
-Clean white labels, rounded corners, subtle glow effects. Minimalist developer diagram style.
-```
-
-**Demo screenshot** (`docs/screenshot.png`) — take this yourself:
-- Ask Claude: *"Get me a full analysis of HDFC Bank — overview, operational metrics, and revenue mix"*
-- Screenshot the Claude response showing multiple tool calls firing and the structured output
-- Crop to 1280×800px
-
-</details>
