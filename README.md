@@ -37,6 +37,8 @@ Tijori Finance is the most comprehensive source for Indian equity data — opera
 
 ## Tools
 
+### v1 — Stable
+
 | Tool | What it does |
 |---|---|
 | `search_company` | Search any company by name, get its slug |
@@ -51,9 +53,16 @@ Tijori Finance is the most comprehensive source for Indian equity data — opera
 | `get_raw_materials` | Commodity price performance — chemicals, spreads, metals |
 | `get_macro_indicators` | India macro — credit, IIP, GST, auto sales, GDP, trade |
 | `get_markets` | Index performance — Nifty, sector indices, conglomerates |
-| `list_popular_screens` | Browse pre-built stock screens |
-| `screen_companies` | Screen stocks by any financial metric combination |
 | `resolve_company_ids` | Resolve slug to numeric company ID |
+
+### v2 — In Development
+
+| Tool | What it does |
+|---|---|
+| `list_popular_screens` | Browse Tijori's pre-built stock screens (Dividend Superstars, Cash Flow Machines, etc.) |
+| `screen_companies` | Screen 5,000+ stocks by any financial metric — ROE, PE, debt, margins, growth, and more |
+
+> The screener tools are functional but depend on Tijori's filter engine staying stable. Use them, but expect occasional breakage after Tijori deploys updates.
 
 ---
 
