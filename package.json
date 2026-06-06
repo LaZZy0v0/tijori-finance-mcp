@@ -4,7 +4,7 @@
   "type": "module",
   "description": "MCP server for Tijori Finance — search, financials, operational metrics, revenue mix, market share, knowledge base and more for Indian equities.",
   "author": "Vedant Rajmane",
-  "license": "ISC",
+  "license": "MIT",
   "main": "src/index.js",
   "scripts": {
     "setup": "npm install && npx playwright install chromium && node discover.js",

@@ -10,7 +10,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-5A67D8?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
-[![License](https://img.shields.io/badge/License-ISC-F59E0B)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-F59E0B)](LICENSE)
 [![Data](https://img.shields.io/badge/Powered%20by-Tijori%20Finance-EA580C)](https://tijorifinance.com)
 [![Status](https://img.shields.io/badge/Status-Active-22C55E)]()
 
