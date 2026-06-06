@@ -43,7 +43,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 ## In Action
 
 ### 1 — Cross-tool deep dive: Titan
-*Revenue mix pulled first, then cross-referenced against P&L data to explain segment-level margin trends*
+*Revenue mix pulled first, then cross-referenced against P&L data to explain trends*
 
 ![Titan — Revenue Mix × P&L](docs/demos/01-titan-revenue-pl.png)
 
@@ -57,14 +57,14 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 ---
 
 ### 3 — IndiGo: Operational metrics
-*KPIs like PLF, RASK, CASK, and fleet utilisation with complete historical time series*
+*All KPIs with complete historical time series*
 
 ![IndiGo — Operational Data](docs/demos/03-interglobe-ops.png)
 
 ---
 
 ### 4 — IndiGo: Revenue mix
-*Segment breakdown (passenger, cargo, ancillary) with trend history per segment*
+*Segment breakdown with trend history per segment*
 
 ![IndiGo — Revenue Mix](docs/demos/04-interglobe-revenue-mix.png)
 
