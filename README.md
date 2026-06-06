@@ -18,13 +18,6 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 ---
 
-<!-- DEMO GIF -->
-<!-- Replace with: docs/demo.gif — record a 30-45 second screen capture -->
-<!-- Show: asking Claude "deep dive into HDFC Bank" → tools firing → rich output -->
-<!-- Tool to record: OBS Studio (free) or Loom, export as GIF via ezgif.com -->
-> 📹 **Demo coming soon** — replace this block with `![Demo](docs/demo.gif)` after recording
-
----
 
 ## What you can do
 
@@ -39,6 +32,43 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 "Which sectors are showing the strongest credit growth in India's macro data?"
 ```
+
+---
+
+## In Action
+
+### 1 — Cross-tool deep dive: Titan
+*Revenue mix pulled first, then cross-referenced against P&L data to explain segment-level margin trends*
+
+![Titan — Revenue Mix × P&L](docs/demos/01-titan-revenue-pl.png)
+
+---
+
+### 2 — IndiGo: P&L history
+*Full income statement history retrieved in one call — revenue, EBITDA, PAT across years*
+
+![IndiGo — P&L History](docs/demos/02-interglobe-pl.png)
+
+---
+
+### 3 — IndiGo: Operational metrics
+*KPIs like PLF, RASK, CASK, and fleet utilisation with complete historical time series*
+
+![IndiGo — Operational Data](docs/demos/03-interglobe-ops.png)
+
+---
+
+### 4 — IndiGo: Revenue mix
+*Segment breakdown (passenger, cargo, ancillary) with trend history per segment*
+
+![IndiGo — Revenue Mix](docs/demos/04-interglobe-revenue-mix.png)
+
+---
+
+### 5 — Concall → Financial projection
+*Knowledge base fetched the latest earnings call transcript, Claude read it and built a forward projection model*
+
+![Concall → Financial Projection](docs/demos/05-concall-projection.png)
 
 ---
 
