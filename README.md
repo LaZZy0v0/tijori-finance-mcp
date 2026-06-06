@@ -1,13 +1,31 @@
+<div align="center">
+
+<!-- HERO BANNER -->
+<!-- Replace with: docs/banner.png — see Gemini prompt at bottom of this file -->
+<!-- Recommended: 1280x640px, dark background, India skyline + data viz aesthetic -->
+![Tijori Finance MCP](https://placehold.co/1280x400/0f172a/f97316?text=Tijori+Finance+MCP&font=montserrat)
+
 # Tijori Finance MCP
 
 **India's first MCP server for Indian equity research.**
 
-Talk to 5,000+ NSE/BSE listed companies directly from Claude. Get financials, operational KPIs, revenue mix, market share trends, investor documents, and macro data — all in one conversation.
+Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-blue?logo=anthropic)](https://modelcontextprotocol.io)
-[![License](https://img.shields.io/badge/License-ISC-yellow)](LICENSE)
-[![Data](https://img.shields.io/badge/Data-Tijori%20Finance-orange)](https://tijorifinance.com)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-5A67D8?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/License-ISC-F59E0B)](LICENSE)
+[![Data](https://img.shields.io/badge/Powered%20by-Tijori%20Finance-EA580C)](https://tijorifinance.com)
+[![Status](https://img.shields.io/badge/Status-Active-22C55E)]()
+
+</div>
+
+---
+
+<!-- DEMO GIF -->
+<!-- Replace with: docs/demo.gif — record a 30-45 second screen capture -->
+<!-- Show: asking Claude "deep dive into HDFC Bank" → tools firing → rich output -->
+<!-- Tool to record: OBS Studio (free) or Loom, export as GIF via ezgif.com -->
+> 📹 **Demo coming soon** — replace this block with `![Demo](docs/demo.gif)` after recording
 
 ---
 
@@ -20,7 +38,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude. Get financials, op
 
 "How have Jio's subscriber metrics and ARPU trended over the last 3 years?"
 
-"Get me the last 4 quarterly earnings releases for Reliance Industries"
+"Get me the last 4 quarterly earnings releases for Reliance Industries and summarize them"
 
 "Which sectors are showing the strongest credit growth in India's macro data?"
 ```
@@ -29,9 +47,18 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude. Get financials, op
 
 ## Why this exists
 
-Most financial MCP servers are built for US markets — Yahoo Finance, SEC filings, S&P data. **Nothing existed for India.**
+Most financial MCP servers are built for US markets — Yahoo Finance, SEC filings, S&P data.
 
-Tijori Finance is the most comprehensive source for Indian equity data — operational KPIs, revenue segment breakdowns, market share trends, and curated investor documents that aren't available anywhere else via API. This MCP server exposes all of it to Claude.
+**Nothing existed for India.**
+
+Tijori Finance is the most comprehensive source for Indian equity data — operational KPIs, revenue segment breakdowns, market share trends, and curated investor documents that aren't available anywhere else. This MCP server exposes all of it to Claude.
+
+<details>
+<summary><strong>What makes this different from a web search?</strong></summary>
+
+A web search gives you unstructured pages. This gives Claude **structured, queryable data** — historical time series, typed fields, and consistent schemas across all 5,000+ companies. Claude can reason over it, compare across companies, and build analyses — not just summarize a webpage.
+
+</details>
 
 ---
 
@@ -41,7 +68,7 @@ Tijori Finance is the most comprehensive source for Indian equity data — opera
 
 | Tool | What it does |
 |---|---|
-| `search_company` | Search any company by name, get its slug |
+| `search_company` | Search any company by name, returns slug |
 | `get_company_overview` | Key ratios, forensics score, market cap, PE, ROE, ROCE |
 | `get_financials` | P&L, Balance Sheet, Cash Flow, Ratios, Quarterly results |
 | `get_shareholding` | 10-quarter promoter / FII / DII / public breakdown |
@@ -62,21 +89,19 @@ Tijori Finance is the most comprehensive source for Indian equity data — opera
 | `list_popular_screens` | Browse Tijori's pre-built stock screens (Dividend Superstars, Cash Flow Machines, etc.) |
 | `screen_companies` | Screen 5,000+ stocks by any financial metric — ROE, PE, debt, margins, growth, and more |
 
-> The screener tools are functional but depend on Tijori's filter engine staying stable. Use them, but expect occasional breakage after Tijori deploys updates.
-
----
-
-## Requirements
-
-- **Node.js v18+** — [nodejs.org](https://nodejs.org)
-- **Tijori Finance account** (paid) — [tijorifinance.com](https://tijorifinance.com)
-- **Claude Desktop** or VS Code with the Claude extension
+> These tools are functional but depend on Tijori's filter engine. Expect occasional breakage after Tijori deploys updates.
 
 ---
 
 ## Setup
 
-**1. Clone and configure**
+### Requirements
+
+- [Node.js v18+](https://nodejs.org)
+- A paid [Tijori Finance](https://tijorifinance.com) account
+- [Claude Desktop](https://claude.ai/download) or VS Code with the Claude extension
+
+### 1. Clone and configure
 
 ```bash
 git clone https://github.com/LaZZy0v0/tijori-finance-mcp.git
@@ -86,43 +111,81 @@ cp .env.example .env
 
 Edit `.env` with your Tijori credentials:
 
-```
+```env
 TIJORI_EMAIL=your@email.com
 TIJORI_PASSWORD=yourpassword
 ```
 
-**2. Install and authenticate**
+### 2. Install and authenticate
 
 ```bash
 npm run setup
 ```
 
-This installs packages, downloads the Chromium browser (one-time, ~150MB), then opens a browser window for you to log in to Tijori Finance. Once logged in, your session is saved automatically and the browser closes.
+This does three things:
+- Installs Node packages
+- Downloads Chromium (~150MB, one-time only)
+- Opens a browser for you to log in to Tijori Finance — once logged in, the session is saved and the browser closes
 
-**3. Add to Claude**
+### 3. Connect to Claude
 
-Edit your MCP config file and add the server. Use the **absolute path** to this repo.
+Find your MCP config file and add the block below. The path **must be absolute**.
 
-**Claude Desktop on Windows** — `%APPDATA%\Claude\claude_desktop_config.json`
+<details>
+<summary><strong>Claude Desktop — Windows</strong></summary>
 
-**Claude Desktop on Mac** — `~/Library/Application Support/Claude/claude_desktop_config.json`
+File: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "tijori-finance": {
       "command": "node",
-      "args": ["/absolute/path/to/tijori-finance-mcp/src/index.js"]
+      "args": ["C:/Users/yourname/tijori-finance-mcp/src/index.js"]
     }
   }
 }
 ```
 
-**4. Restart Claude Desktop**
+</details>
 
-Fully quit and reopen. The server starts automatically.
+<details>
+<summary><strong>Claude Desktop — Mac</strong></summary>
 
-**5. Test it**
+File: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "tijori-finance": {
+      "command": "node",
+      "args": ["/Users/yourname/tijori-finance-mcp/src/index.js"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>VS Code</strong></summary>
+
+Add to your Claude extension MCP settings:
+
+```json
+{
+  "tijori-finance": {
+    "command": "node",
+    "args": ["/absolute/path/to/tijori-finance-mcp/src/index.js"]
+  }
+}
+```
+
+</details>
+
+### 4. Restart Claude and test
+
+Fully quit and reopen Claude Desktop. Then try:
 
 > *"Search for Tata Steel on Tijori"*
 
@@ -132,26 +195,68 @@ If Claude returns a result, you're connected.
 
 ## Session expiry
 
-Tijori sessions expire periodically. When tools stop working, run:
+Tijori sessions expire periodically. When tools stop working:
 
 ```bash
 npm run reauth
 ```
 
-A browser window opens — log in, done.
+A browser window opens — log in manually and you're back.
 
 ---
 
 ## How it works
 
-The server uses [Playwright](https://playwright.dev) to maintain an authenticated browser session with Tijori Finance. Each tool navigates to the relevant page or calls the underlying API endpoint, parses the response, and returns structured JSON to Claude. Results are cached in-memory (6 hours for financials, 30 minutes for metrics) to avoid redundant requests.
+The server uses [Playwright](https://playwright.dev) to maintain an authenticated browser session with Tijori Finance. Each tool navigates to the relevant page or calls the underlying API, parses the response, and returns structured JSON to Claude. Results are cached in-memory (6 hours for financials, 30 minutes for metrics) to keep things fast.
+
+<!-- ARCHITECTURE DIAGRAM -->
+<!-- Replace with: docs/architecture.png — see Gemini prompt at bottom of this file -->
+<!-- Show: Claude → MCP Server → Playwright browser → Tijori Finance, with cache layer -->
 
 ---
 
 ## Disclaimer
 
-This project is not affiliated with Tijori Finance. It requires your own paid Tijori Finance subscription. Use it for personal research only — do not redistribute the underlying data.
+This project is not affiliated with Tijori Finance. It requires your own paid Tijori Finance subscription. Use for personal research only — do not redistribute the underlying data.
 
 ---
 
-*Built with [Model Context Protocol](https://modelcontextprotocol.io) · Powered by [Tijori Finance](https://tijorifinance.com)*
+<div align="center">
+
+*Built with [Model Context Protocol](https://modelcontextprotocol.io) · Data from [Tijori Finance](https://tijorifinance.com)*
+
+</div>
+
+---
+
+<details>
+<summary><strong>Image generation prompts (Gemini / Imagen)</strong></summary>
+
+**Hero banner** (`docs/banner.png`, 1280×400px):
+```
+A wide cinematic banner for a developer tool called "Tijori Finance MCP". Dark navy background (#0f172a). 
+On the left, a glowing abstract visualization of stock market data — candlestick charts, line graphs, 
+numbers flowing — in orange and blue tones. On the right, subtle outlines of the Mumbai skyline. 
+In the center, clean modern sans-serif text "Tijori Finance MCP" in white. 
+Tagline below in smaller text: "India's first MCP server for Indian equity research". 
+Professional fintech aesthetic, no people, no logos.
+```
+
+**Architecture diagram** (`docs/architecture.png`, 900×400px):
+```
+A clean minimal technical architecture diagram on a dark (#0f172a) background. 
+Four boxes connected with arrows left to right: 
+1. "Claude" (purple box with Anthropic logo style), 
+2. "MCP Server" (blue box, Node.js), 
+3. "Playwright Browser" (green box), 
+4. "Tijori Finance" (orange box). 
+A "Cache" cylinder below the MCP Server box connected with a bidirectional arrow. 
+Clean white labels, rounded corners, subtle glow effects. Minimalist developer diagram style.
+```
+
+**Demo screenshot** (`docs/screenshot.png`) — take this yourself:
+- Ask Claude: *"Get me a full analysis of HDFC Bank — overview, operational metrics, and revenue mix"*
+- Screenshot the Claude response showing multiple tool calls firing and the structured output
+- Crop to 1280×800px
+
+</details>
