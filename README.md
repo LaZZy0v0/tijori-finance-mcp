@@ -32,7 +32,7 @@ pull their latest investor presentation to figure out if this is distribution or
 revenue mix and operational metrics for Deepak Nitrite to see if margins are at risk."
 ```
 
-<video src="MCP_.mp4" controls muted autoplay loop width="100%"></video>
+<video src="https://github.com/user-attachments/assets/15e976d9-872a-494d-8aea-ce369de9cd01" controls muted autoplay loop width="100%"></video>
 
 ---
 
