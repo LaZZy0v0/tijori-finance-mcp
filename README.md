@@ -56,14 +56,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 ---
 
-### 3 — IndiGo: Operational metrics
-*All KPIs with complete historical time series*
-
-![IndiGo — Operational Data](docs/demos/03-interglobe-ops.png)
-
----
-
-### 4 — Concall → Financial projection
+### 3 — Concall → Financial projection
 *Knowledge base fetched the latest earnings call transcript, Claude read it and built a forward projection model*
 
 ![Concall → Financial Projection](docs/demos/05-concall-projection.png)
