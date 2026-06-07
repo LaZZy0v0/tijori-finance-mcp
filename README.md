@@ -209,7 +209,7 @@ Add to your Claude extension MCP settings:
 
 Fully quit and reopen Claude Desktop. Then try:
 
-> *"Search for Tata Steel on Tijori"*
+> *"Search_company Tata Steel using Tijori MCP"*
 
 If Claude returns a result, you're connected.
 
