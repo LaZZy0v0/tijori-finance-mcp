@@ -25,11 +25,12 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 "Pull Zomato's last 6 quarters of revenue and EBITDA margin, then read their
 latest concall transcript — are they hitting the targets management guided for?"
 
-"Screen for capital-light compounders: ROE > 20%, debt-to-equity < 0.3,
-3-year PAT growth > 15%. Then show me the revenue mix breakdown for the top 5."
+"Bajaj Finance's FII stake dropped 400bps last year while promoters held flat —
+pull their 10-quarter shareholding history and latest investor presentation
+to figure out if this is distribution or passive rotation."
 
-"Which TJI niche sectors have beaten Nifty on 1-year returns?
-Pull the top 3 and list every constituent stock with its individual return."
+"Crude is up — check the raw materials data for chemical spreads, then pull
+revenue mix and operational metrics for Deepak Nitrite to see if margins are at risk."
 ```
 
 ---
