@@ -5,3 +5,7 @@ output/
 # debug/explore scripts (dev only)
 explore*.js
 debug_*.js
+
+# local Claude memory and internal planning docs
+.claude/
+docs/superpowers/

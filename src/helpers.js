@@ -28,17 +28,12 @@ export async function resolveCompanyIds(slug) {
       const companyIdMatch = html.match(/"company_id"\s*:\s*(\d+)/);
       const companyId = companyIdMatch ? parseInt(companyIdMatch[1], 10) : null;
 
-      // sector_id: baked into onclick attributes of op-metrics list items
-      // e.g. onclick="plot_line_chart_for_metric('/api/v1/ind/company_op_metrics/129/1251/', ...)"
-      const sectorIdMatch = html.match(/company_op_metrics\/\d+\/(\d+)\//);
-      const sectorId = sectorIdMatch ? parseInt(sectorIdMatch[1], 10) : null;
-
       // name and symbol: from inline script JSON blob
       const metaMatch = html.match(/"company"\s*:\s*"([^"]+)"\s*,\s*"company_id"\s*:\s*\d+\s*,\s*"symbol"\s*:\s*"([^"]+)"/);
       const name   = metaMatch ? metaMatch[1] : null;
       const symbol = metaMatch ? metaMatch[2] : null;
 
-      return { company_id: companyId, sector_id: sectorId, name, symbol };
+      return { company_id: companyId, name, symbol };
     });
   });
 
