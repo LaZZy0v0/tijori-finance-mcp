@@ -120,7 +120,7 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 ### Requirements
 
 - [Node.js v18+](https://nodejs.org)
-- A paid [Tijori Finance](https://tijorifinance.com) account
+- A [Tijori Finance](https://tijorifinance.com) account
 - [Claude Desktop](https://claude.ai/download) or VS Code with the Claude extension
 
 ### 1. Clone and configure
