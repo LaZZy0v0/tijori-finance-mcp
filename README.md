@@ -22,15 +22,14 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 ## What you can do
 
 ```
-"Deep dive into HDFC Bank — financials, KPIs, market share, and latest concall"
+"Pull Zomato's last 6 quarters of revenue and EBITDA margin, then read their
+latest concall transcript — are they hitting the targets management guided for?"
 
-"Screen for companies with ROE > 20%, debt-to-equity < 0.3, and market cap > 5000 Cr"
+"Screen for capital-light compounders: ROE > 20%, debt-to-equity < 0.3,
+3-year PAT growth > 15%. Then show me the revenue mix breakdown for the top 5."
 
-"How have Jio's subscriber metrics and ARPU trended over the last 3 years?"
-
-"Get me the last 4 quarterly earnings releases for Reliance Industries and summarize them"
-
-"Which sectors are showing the strongest credit growth in India's macro data?"
+"Which TJI niche sectors have beaten Nifty on 1-year returns?
+Pull the top 3 and list every constituent stock with its individual return."
 ```
 
 ---
