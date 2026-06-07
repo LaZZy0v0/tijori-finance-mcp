@@ -43,7 +43,7 @@ server.registerTool(
 server.registerTool(
   'resolve_company_ids',
   {
-    description: 'Resolve a company slug to its numeric company_id and sector_id. Required before calling get_operational_metrics.',
+    description: 'Resolve a company slug to its numeric company_id. Required before calling get_fund_flow.',
     inputSchema: { slug: z.string() },
   },
   wrap(({ slug }) => resolveCompanyIds(slug))
@@ -135,7 +135,7 @@ server.registerTool(
 server.registerTool(
   'get_markets',
   {
-    description: 'Get index performance: headline (Nifty/Sensex/Nifty Bank etc.), niche (TJI sector indices with 1D–5Y price returns — each row includes tjiid for get_sector_constituents), or conglomerates (9 Indian business groups with ROE by year — each row includes tjiid for get_conglomerate_constituents).',
+    description: 'Get index performance: headline (Nifty/Sensex/Nifty Bank etc.), niche (TJI sector indices with 1D–5Y price returns — each row includes tjiid for get_sector_constituents), or conglomerates (9 Indian business groups — each row includes tjiid for get_conglomerate_constituents).',
     inputSchema: {
       tab: z.enum(['headline', 'niche', 'conglomerates']),
     },
@@ -143,7 +143,7 @@ server.registerTool(
   wrap(({ tab }) => getMarkets(tab))
 );
 
-// 15. get_sector_constituents
+// 11. get_sector_constituents
 server.registerTool(
   'get_sector_constituents',
   {
@@ -155,7 +155,7 @@ server.registerTool(
   wrap(({ tjiid }) => getNicheConstituents(tjiid))
 );
 
-// 16. get_conglomerate_constituents
+// 12. get_conglomerate_constituents
 server.registerTool(
   'get_conglomerate_constituents',
   {
@@ -187,7 +187,7 @@ server.registerTool(
   wrap(({ slug }) => getRevenueMix(slug))
 );
 
-// 14. get_market_share
+// 15. get_market_share
 server.registerTool(
   'get_market_share',
   {
@@ -197,7 +197,7 @@ server.registerTool(
   wrap(({ slug }) => getMarketShare(slug))
 );
 
-// 11. list_popular_screens
+// 16. list_popular_screens
 server.registerTool(
   'list_popular_screens',
   {
@@ -207,7 +207,7 @@ server.registerTool(
   wrap(() => listPopularScreens())
 );
 
-// 12. screen_companies
+// 17. screen_companies
 server.registerTool(
   'screen_companies',
   {
