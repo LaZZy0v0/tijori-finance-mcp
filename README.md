@@ -32,6 +32,8 @@ pull their latest investor presentation to figure out if this is distribution or
 revenue mix and operational metrics for Deepak Nitrite to see if margins are at risk."
 ```
 
+<video src="MCP_.mp4" controls muted autoplay loop width="100%"></video>
+
 ---
 
 > *"The goal is to turn data into information, and information into insight."*
