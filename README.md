@@ -26,8 +26,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 latest concall transcript — are they hitting the targets management guided for?"
 
 "Bajaj Finance's FII stake dropped 400bps last year while promoters held flat —
-pull their 10-quarter shareholding history and latest investor presentation
-to figure out if this is distribution or passive rotation."
+pull their latest investor presentation to figure out if this is distribution or passive rotation."
 
 "Crude is up — check the raw materials data for chemical spreads, then pull
 revenue mix and operational metrics for Deepak Nitrite to see if margins are at risk."
