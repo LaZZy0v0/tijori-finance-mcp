@@ -4,12 +4,12 @@ import { z } from 'zod';
 
 // Import all tools
 import { searchCompany } from './tools/search.js';
-import { getCompanyOverview } from './tools/company.js';
+import { getCompanyOverview, getKnowledgeBase, getRevenueMix, getMarketShare } from './tools/company.js';
 import { getFinancials } from './tools/financials.js';
 import { getShareholding } from './tools/shareholding.js';
 import { getOperationalMetrics, getFundFlow } from './tools/metrics.js';
-import { getRawMaterials, getMacroIndicators, getMarkets } from './tools/market.js';
-import { screenCompanies } from './tools/screener.js';
+import { getRawMaterials, getMacroIndicators, getMarkets, getNicheConstituents, getConglomerateConstituents } from './tools/market.js';
+import { screenCompanies, listPopularScreens } from './tools/screener.js';
 import { resolveCompanyIds } from './helpers.js';
 import { closeBrowser } from './browser.js';
 
@@ -33,7 +33,7 @@ function wrap(fn) {
 server.registerTool(
   'search_company',
   {
-    description: 'Search Tijori Finance for companies by name. Returns name, slug, company_id. Run this first to get the slug needed by other tools.',
+    description: 'Search Tijori Finance for companies by name. Returns name and slug. Use the slug with all other tools.',
     inputSchema: { query: z.string().min(1) },
   },
   wrap(({ query }) => searchCompany(query))
@@ -86,13 +86,10 @@ server.registerTool(
 server.registerTool(
   'get_operational_metrics',
   {
-    description: 'Get operational KPIs and sector peers. Run resolve_company_ids first to get company_id and sector_id.',
-    inputSchema: {
-      company_id: z.number().int().positive(),
-      sector_id: z.number().int().positive(),
-    },
+    description: 'Get all operational KPIs for a company with latest values and recent trend. Pass the company slug.',
+    inputSchema: { slug: z.string() },
   },
-  wrap(({ company_id, sector_id }) => getOperationalMetrics(company_id, sector_id))
+  wrap(({ slug }) => getOperationalMetrics(slug))
 );
 
 // 7. get_fund_flow
@@ -138,17 +135,83 @@ server.registerTool(
 server.registerTool(
   'get_markets',
   {
-    description: 'Get index performance: headline indices (Nifty), niche TJI indices, or conglomerate indices.',
-    inputSchema: { tab: z.enum(['headline', 'niche', 'conglomerates']) },
+    description: 'Get index performance: headline (Nifty/Sensex/Nifty Bank etc.), niche (TJI sector indices with 1D–5Y price returns — each row includes tjiid for get_sector_constituents), or conglomerates (9 Indian business groups with ROE by year — each row includes tjiid for get_conglomerate_constituents).',
+    inputSchema: {
+      tab: z.enum(['headline', 'niche', 'conglomerates']),
+    },
   },
   wrap(({ tab }) => getMarkets(tab))
 );
 
-// 11. screen_companies
+// 15. get_sector_constituents
+server.registerTool(
+  'get_sector_constituents',
+  {
+    description: 'Get all constituent companies of a TJI niche sector index. Pass the tjiid from get_markets({ tab: "niche" }). Returns each company\'s slug (usable with other tools), market-cap weight %, equal weight %, and price returns for 1D/1W/1M/3M/6M/1Y/2Y/3Y/5Y/10Y.',
+    inputSchema: {
+      tjiid: z.number().int().positive(),
+    },
+  },
+  wrap(({ tjiid }) => getNicheConstituents(tjiid))
+);
+
+// 16. get_conglomerate_constituents
+server.registerTool(
+  'get_conglomerate_constituents',
+  {
+    description: 'Get all constituent companies of a conglomerate group. Pass the tjiid from get_markets({ tab: "conglomerates" }). Returns each company\'s slug (usable with other tools) and price returns for 1D/1W/1M/3M/6M/1Y/2Y/3Y/5Y/10Y. The conglomerates tab itself shows ROE by year; this tool gives the underlying price performance per stock.',
+    inputSchema: {
+      tjiid: z.number().int().positive(),
+    },
+  },
+  wrap(({ tjiid }) => getConglomerateConstituents(tjiid))
+);
+
+// 13. get_knowledge_base
+server.registerTool(
+  'get_knowledge_base',
+  {
+    description: 'Get all investor documents for a company: annual reports, earnings releases, investor presentations, conference call transcripts, and curated research links. Returns URLs grouped by document type.',
+    inputSchema: { slug: z.string() },
+  },
+  wrap(({ slug }) => getKnowledgeBase(slug))
+);
+
+// 14. get_revenue_mix
+server.registerTool(
+  'get_revenue_mix',
+  {
+    description: 'Get revenue/segment mix breakdowns for a company. Returns latest % breakdown and full historical trend per segment.',
+    inputSchema: { slug: z.string() },
+  },
+  wrap(({ slug }) => getRevenueMix(slug))
+);
+
+// 14. get_market_share
+server.registerTool(
+  'get_market_share',
+  {
+    description: 'Get all market share metrics for a company (e.g. Bank Advances, Credit Cards, Housing Loans). Returns latest % value and as-of date for each metric.',
+    inputSchema: { slug: z.string() },
+  },
+  wrap(({ slug }) => getMarketShare(slug))
+);
+
+// 11. list_popular_screens
+server.registerTool(
+  'list_popular_screens',
+  {
+    description: 'List all pre-built popular stock screens on Tijori Finance (e.g. "Dividend Superstars", "Cash Flow Machines"). Use the name with screen_companies { preset } to run one.',
+    inputSchema: {},
+  },
+  wrap(() => listPopularScreens())
+);
+
+// 12. screen_companies
 server.registerTool(
   'screen_companies',
   {
-    description: "Screen companies by financial metrics. Pass a filter object like {roe: {min: 15}} or a natural language query string like '( ROE > 15 ) and ( Debt to Equity Ratio < 0.5 )'.",
+    description: "Screen companies by financial metrics. 'filters' accepts a query string like '( ROE > 15 ) and ( Debt to Equity Ratio < 0.5 )' or shorthand object like {roe:{min:15}, debt_to_equity:{max:0.5}}. Shorthands: roe, roce, pe, pb, market_cap, opm, pat, eps, dividend_yield, nim, casa, gross_npa, ev_ebitda, fcf. Any exact Tijori field name works too e.g. 'Last Year ROE', '3yr Avg ROCE', '3yr Growth PAT'.",
     inputSchema: {
       filters: z.union([
         z.string(),
@@ -156,7 +219,7 @@ server.registerTool(
       ]),
     },
   },
-  wrap(({ filters }) => screenCompanies(filters))
+  wrap((args) => screenCompanies(args))
 );
 
 async function main() {

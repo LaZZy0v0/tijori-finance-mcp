@@ -100,14 +100,16 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 | `get_markets` | Index performance — Nifty, sector indices, conglomerates |
 | `resolve_company_ids` | Resolve slug to numeric company ID |
 
-### v2 — In Development
+### v2 — New
 
 | Tool | What it does |
 |---|---|
 | `list_popular_screens` | Browse Tijori's pre-built stock screens (Dividend Superstars, Cash Flow Machines, etc.) |
 | `screen_companies` | Screen 5,000+ stocks by any financial metric — ROE, PE, debt, margins, growth, and more |
+| `get_sector_constituents` | All stocks inside a TJI niche sector index. Pass `tjiid` from `get_markets("niche")`. Returns slug, market-cap weight, and 1D–10Y price returns per stock |
+| `get_conglomerate_constituents` | All companies inside a business group. Pass `tjiid` from `get_markets("conglomerates")`. Returns slug and 1D–10Y price returns per stock |
 
-> These tools are functional but depend on Tijori's filter engine. Expect occasional breakage after Tijori deploys updates.
+> `screen_companies` and `list_popular_screens` depend on Tijori's filter engine — expect occasional breakage after Tijori updates.
 
 ---
 

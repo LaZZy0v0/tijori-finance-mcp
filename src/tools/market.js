@@ -1,4 +1,4 @@
-import { loadPage, closePage } from '../browser.js';
+import { loadPage, closePage, browserFetch } from '../browser.js';
 import { parseRawMaterials, parseMacroIndicators, parseMarkets } from '../parsers/market.js';
 import { get, set, TTL } from '../cache.js';
 
@@ -52,4 +52,74 @@ export async function getMarkets(tab) {
   } finally {
     await closePage(page);
   }
+}
+
+export async function getConglomerateConstituents(tjiid) {
+  const cacheKey = `conglomerate_constituents:${tjiid}`;
+  const cached = get(cacheKey);
+  if (cached) return cached;
+
+  const url = `https://www.tijorifinance.com/api/v1/groups/price/${tjiid}/`;
+  const raw = await browserFetch(url);
+
+  if (!Array.isArray(raw?.data ?? raw)) {
+    throw new Error(`Unexpected response from Tijori for tjiid=${tjiid}`);
+  }
+
+  const companies = (raw?.data ?? raw).map(item => ({
+    name: item.name,
+    slug: item.slug,
+    returns: {
+      '1D': item.data?.[0] ?? null,
+      '1W': item.data?.[1] ?? null,
+      '1M': item.data?.[2] ?? null,
+      '3M': item.data?.[3] ?? null,
+      '6M': item.data?.[4] ?? null,
+      '1Y': item.data?.[5] ?? null,
+      '2Y': item.data?.[6] ?? null,
+      '3Y': item.data?.[7] ?? null,
+      '5Y': item.data?.[8] ?? null,
+      '10Y': item.data?.[9] ?? null,
+    },
+  }));
+
+  const result = { tjiid, total: companies.length, companies };
+  set(cacheKey, result, TTL.MARKETS);
+  return result;
+}
+
+export async function getNicheConstituents(tjiid) {
+  const cacheKey = `niche_constituents:${tjiid}`;
+  const cached = get(cacheKey);
+  if (cached) return cached;
+
+  const url = `https://www.tijorifinance.com/api/v1/niche/price/${tjiid}/`;
+  const raw = await browserFetch(url);
+
+  if (!Array.isArray(raw?.data ?? raw)) {
+    throw new Error(`Unexpected response from Tijori for tjiid=${tjiid}`);
+  }
+
+  const companies = (raw?.data ?? raw).map(item => ({
+    name: item.name,
+    slug: item.slug,
+    weight_pct: item.weight ?? null,
+    eq_weight_pct: item.eq_weight ?? null,
+    returns: {
+      '1D': item.data?.[0] ?? null,
+      '1W': item.data?.[1] ?? null,
+      '1M': item.data?.[2] ?? null,
+      '3M': item.data?.[3] ?? null,
+      '6M': item.data?.[4] ?? null,
+      '1Y': item.data?.[5] ?? null,
+      '2Y': item.data?.[6] ?? null,
+      '3Y': item.data?.[7] ?? null,
+      '5Y': item.data?.[8] ?? null,
+      '10Y': item.data?.[9] ?? null,
+    },
+  }));
+
+  const result = { tjiid, total: companies.length, companies };
+  set(cacheKey, result, TTL.MARKETS);
+  return result;
 }
