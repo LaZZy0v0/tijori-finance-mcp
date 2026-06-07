@@ -63,14 +63,7 @@ Talk to 5,000+ NSE/BSE listed companies directly from Claude.
 
 ---
 
-### 4 — IndiGo: Revenue mix
-*Segment breakdown with trend history per segment*
-
-![IndiGo — Revenue Mix](docs/demos/04-interglobe-revenue-mix.png)
-
----
-
-### 5 — Concall → Financial projection
+### 4 — Concall → Financial projection
 *Knowledge base fetched the latest earnings call transcript, Claude read it and built a forward projection model*
 
 ![Concall → Financial Projection](docs/demos/05-concall-projection.png)
