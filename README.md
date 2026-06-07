@@ -72,6 +72,16 @@ Most financial MCP servers are built for US markets — Yahoo Finance, SEC filin
 
 Tijori Finance is the most comprehensive source for Indian equity data — operational KPIs, revenue segment breakdowns, market share trends, and curated investor documents that aren't available anywhere else. This MCP server exposes all of it to Claude.
 
+| Feature | **Tijori Finance MCP** | Traditional Research | Bloomberg / Refinitiv |
+|---|---|---|---|
+| **Setup Time** | 5 minutes | Hours (Python, Excel...) | Weeks (Contracts) |
+| **Cost** | Free + Tijori subscription | Variable | $30k+/year |
+| **Indian Market Coverage** | ✅ 5,000+ NSE/BSE stocks | ❌ Fragmented / manual | Partial |
+| **Operational KPIs** | ✅ Segment data, KPIs, market share | ❌ Manual scraping | ✅ Proprietary |
+| **Concall Transcripts** | ✅ Earnings calls, investor docs | ❌ PDF hunting | Partial |
+| **AI-Ready Output** | ✅ Structured JSON → Claude | ❌ Unstructured pages | ❌ Proprietary only |
+| **API Keys Required** | None | Multiple (OpenAI, etc.) | N/A |
+
 <details>
 <summary><strong>What makes this different from a web search?</strong></summary>
 
