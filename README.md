@@ -98,19 +98,19 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 | `get_raw_materials` | Commodity price performance — chemicals, spreads, metals |
 | `get_macro_indicators` | India macro — credit, IIP, GST, auto sales, GDP, trade |
 | `get_markets` | Index performance — Nifty, sector indices, conglomerates |
+| `get_sector_constituents` | All stocks inside a TJI niche sector index. Pass `tjiid` from `get_markets("niche")`. Returns slug, market-cap weight, and 1D–10Y price returns per stock |
+| `get_conglomerate_constituents` | All companies inside a business group. Pass `tjiid` from `get_markets("conglomerates")`. Returns slug and 1D–10Y price returns per stock |
 | `resolve_company_ids` | Resolve slug to numeric company ID |
 
-### v2 — New
+### v2 — In Development
 
 | Tool | What it does |
 |---|---|
 | `list_popular_screens` | Browse Tijori's pre-built stock screens (Dividend Superstars, Cash Flow Machines, etc.) |
 | `screen_companies` | Screen 5,000+ stocks by any financial metric — ROE, PE, debt, margins, growth, and more |
-| `get_sector_constituents` | All stocks inside a TJI niche sector index. Pass `tjiid` from `get_markets("niche")`. Returns slug, market-cap weight, and 1D–10Y price returns per stock |
-| `get_conglomerate_constituents` | All companies inside a business group. Pass `tjiid` from `get_markets("conglomerates")`. Returns slug and 1D–10Y price returns per stock |
 | `analyze_portfolio` | Pass a list of company slugs — get back sector distribution, weighted avg PE/ROE/OPM, forensics spread, and promoter pledge flags across the whole portfolio |
 
-> `screen_companies` and `list_popular_screens` depend on Tijori's filter engine — expect occasional breakage after Tijori updates.
+> v2 tools are functional but not yet stable — expect occasional breakage.
 
 ---
 
