@@ -1,10 +1,15 @@
 {
   "name": "tijori-finance-mcp",
   "version": "1.0.0",
+  "mcpName": "io.github.LaZZy0v0/tijori-finance",
   "type": "module",
   "description": "MCP server for Tijori Finance — search, financials, operational metrics, revenue mix, market share, knowledge base and more for Indian equities.",
   "author": "Vedant Rajmane",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LaZZy0v0/tijori-finance-mcp.git"
+  },
   "main": "src/index.js",
   "scripts": {
     "setup": "node setup.js",
