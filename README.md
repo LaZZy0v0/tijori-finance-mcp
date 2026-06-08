@@ -130,7 +130,7 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 ### Requirements
 
 - [Node.js v18+](https://nodejs.org) — install the **LTS** version
-- A [Tijori Finance](https://tijorifinance.com) account
+- A [Tijori Finance](https://tijorifinance.com) account — free account works but has data limits; **Pro recommended** for full access
 - [Claude Desktop](https://claude.ai/download)
 
 ---
