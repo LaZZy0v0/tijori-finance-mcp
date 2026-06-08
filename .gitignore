@@ -2,9 +2,10 @@ node_modules/
 .env
 output/
 
-# debug/explore scripts (dev only)
+# debug/explore/benchmark scripts (dev only)
 explore*.js
 debug_*.js
+benchmark.js
 
 # local Claude memory and internal planning docs
 .claude/
