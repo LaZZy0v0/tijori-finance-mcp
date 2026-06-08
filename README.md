@@ -129,44 +129,87 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 
 ### Requirements
 
-- [Node.js v18+](https://nodejs.org)
+- [Node.js v18+](https://nodejs.org) — install the **LTS** version
 - A [Tijori Finance](https://tijorifinance.com) account
-- [Claude Desktop](https://claude.ai/download) or VS Code with the Claude extension
+- [Claude Desktop](https://claude.ai/download)
 
-### 1. Clone and configure
+---
+
+### Option 1 — Wizard (recommended)
+
+The setup script handles everything automatically: installs packages, downloads the browser, authenticates, and writes the Claude Desktop config for you.
+
+**Windows**
+
+1. [Download Node.js](https://nodejs.org) and install it (choose LTS)
+2. [Download Claude Desktop](https://claude.ai/download) and install it
+3. [Download this repo](https://github.com/LaZZy0v0/tijori-finance-mcp/archive/refs/heads/master.zip) and unzip it anywhere
+4. Double-click **`setup.bat`** inside the folder
+5. Follow the prompts — enter your Tijori email/password, then log in through the browser window that opens
+6. **Fully quit and reopen Claude Desktop**
+
+**Mac / Linux**
 
 ```bash
 git clone https://github.com/LaZZy0v0/tijori-finance-mcp.git
 cd tijori-finance-mcp
-cp .env.example .env
+node setup.js
 ```
 
-Edit `.env` with your Tijori credentials:
+Follow the prompts, then fully quit and reopen Claude Desktop.
+
+---
+
+### Option 2 — Manual
+
+For those who want to see exactly what each step does.
+
+**1. Clone and set credentials**
+
+```bash
+# Mac / Linux
+git clone https://github.com/LaZZy0v0/tijori-finance-mcp.git
+cd tijori-finance-mcp
+cp .env.example .env
+
+# Windows
+git clone https://github.com/LaZZy0v0/tijori-finance-mcp.git
+cd tijori-finance-mcp
+copy .env.example .env
+```
+
+Open `.env` in any text editor and fill in your Tijori credentials:
 
 ```env
 TIJORI_EMAIL=your@email.com
 TIJORI_PASSWORD=yourpassword
 ```
 
-### 2. Install and authenticate
+**2. Install packages and browser**
 
 ```bash
-npm run setup
+npm install
+npx playwright install chromium
 ```
 
-This does three things:
-- Installs Node packages
-- Downloads Chromium (~150MB, one-time only)
-- Opens a browser for you to log in to Tijori Finance — once logged in, the session is saved and the browser closes
+`npm install` downloads the Node.js dependencies. `playwright install chromium` downloads a ~150 MB Chromium browser used to maintain your Tijori session — one-time only.
 
-### 3. Connect to Claude
+**3. Authenticate**
 
-Find your MCP config file and add the block below. The path **must be absolute**.
+```bash
+node discover.js
+```
 
-<details>
-<summary><strong>Claude Desktop — Windows</strong></summary>
+A browser window opens at the Tijori Finance sign-in page. Log in as you normally would. Once you're in, the script visits a few pages in the background to capture API endpoints, then the window closes automatically. Your session is saved to `output/session.json`.
 
-File: `%APPDATA%\Claude\claude_desktop_config.json`
+**4. Configure Claude Desktop**
+
+Find your config file and add the block below. The path to `src/index.js` **must be absolute**.
+
+| OS | Config file location |
+|---|---|
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Mac | `~/Library/Application Support/Claude/claude_desktop_config.json` |
 
 ```json
 {
@@ -179,47 +222,13 @@ File: `%APPDATA%\Claude\claude_desktop_config.json`
 }
 ```
 
-</details>
+**5. Fully quit and reopen Claude Desktop**
 
-<details>
-<summary><strong>Claude Desktop — Mac</strong></summary>
+---
 
-File: `~/Library/Application Support/Claude/claude_desktop_config.json`
+### Test it
 
-```json
-{
-  "mcpServers": {
-    "tijori-finance": {
-      "command": "node",
-      "args": ["/Users/yourname/tijori-finance-mcp/src/index.js"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>VS Code</strong></summary>
-
-Add to your Claude extension MCP settings:
-
-```json
-{
-  "tijori-finance": {
-    "command": "node",
-    "args": ["/absolute/path/to/tijori-finance-mcp/src/index.js"]
-  }
-}
-```
-
-</details>
-
-### 4. Restart Claude and test
-
-Fully quit and reopen Claude Desktop. Then try:
-
-> *"Search_company Tata Steel using Tijori MCP"*
+> *"Search Tata Steel using Tijori MCP"*
 
 If Claude returns a result, you're connected.
 

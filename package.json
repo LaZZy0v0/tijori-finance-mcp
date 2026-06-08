@@ -7,7 +7,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "scripts": {
-    "setup": "npm install && npx playwright install chromium && node discover.js",
+    "setup": "node setup.js",
     "auth": "node discover.js",
     "reauth": "node discover.js --reauth",
     "start": "node src/index.js"
