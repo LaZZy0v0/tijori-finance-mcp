@@ -85,6 +85,13 @@ export async function browserFetch(url, options = {}) {
   });
 }
 
+// Runs fn with the authenticated browser context directly (no page opened).
+// Use when you only need context.request — avoids the overhead of a full page.
+export async function withContext(fn) {
+  await ensureBrowser();
+  return fn(_context);
+}
+
 export async function closeBrowser() {
   if (_browser) { await _browser.close().catch(() => {}); _browser = null; _context = null; }
 }

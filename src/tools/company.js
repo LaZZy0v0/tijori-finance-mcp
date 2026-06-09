@@ -1,9 +1,18 @@
-import { loadPage, closePage, withPage } from '../browser.js';
+import { loadPage, closePage, withPage, withContext } from '../browser.js';
 import { parseOverview } from '../parsers/overview.js';
 import { get, set, TTL } from '../cache.js';
 import { createRequire } from 'module';
+
+// pdf-parse is CJS-only; createRequire lets us import it from an ESM module
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
+
+// pdf-parse emits "Warning: TT: undefined function" lines via console.log.
+// Redirect once at load time so they never reach the MCP stdio channel.
+const _log = console.log;
+const _warn = console.warn;
+console.log  = (...a) => process.stderr.write(a.join(' ') + '\n');
+console.warn = (...a) => process.stderr.write(a.join(' ') + '\n');
 
 const BASE_URL = 'https://www.tijorifinance.com';
 
@@ -84,7 +93,7 @@ export async function getKnowledgeBase(slug) {
 }
 
 export async function fetchDocument(url) {
-  if (!url.includes('files.tijorifinance.com')) {
+  if (new URL(url).hostname !== 'files.tijorifinance.com') {
     throw new Error('Only files.tijorifinance.com URLs are supported');
   }
 
@@ -92,14 +101,11 @@ export async function fetchDocument(url) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  // Use Playwright's API request context — sends browser cookies but runs at Node.js
-  // level, bypassing CORS restrictions that block JS fetch() from the page context
-  const buffer = await withPage(async (page) => {
-    const response = await page.context().request.get(url, {
-      headers: {
-        'Referer': 'https://www.tijorifinance.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      },
+  // Use context.request instead of withPage — no need to open a full browser tab
+  // just to make an authenticated HTTP request. The context already carries cookies.
+  const buffer = await withContext(async (ctx) => {
+    const response = await ctx.request.get(url, {
+      headers: { 'Referer': 'https://www.tijorifinance.com/' },
     });
     if (!response.ok()) {
       const status = response.status();
@@ -110,19 +116,7 @@ export async function fetchDocument(url) {
     return response.body();
   });
 
-  // pdf-parse logs warnings to stdout which corrupts the MCP stdio protocol.
-  // Redirect console output to stderr for the duration of the parse.
-  const origLog = console.log;
-  const origWarn = console.warn;
-  console.log = (...a) => process.stderr.write(a.join(' ') + '\n');
-  console.warn = (...a) => process.stderr.write(a.join(' ') + '\n');
-  let data;
-  try {
-    data = await pdfParse(buffer);
-  } finally {
-    console.log = origLog;
-    console.warn = origWarn;
-  }
+  const data = await pdfParse(buffer);
   const result = {
     url,
     pages: data.numpages,
