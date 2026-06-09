@@ -1,6 +1,9 @@
 import { loadPage, closePage, withPage } from '../browser.js';
 import { parseOverview } from '../parsers/overview.js';
 import { get, set, TTL } from '../cache.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 
 const BASE_URL = 'https://www.tijorifinance.com';
 
@@ -78,6 +81,37 @@ export async function getKnowledgeBase(slug) {
   const final = { slug, ...result };
   set(cacheKey, final, TTL.FINANCIALS);
   return final;
+}
+
+export async function fetchDocument(url) {
+  if (!url.includes('files.tijorifinance.com')) {
+    throw new Error('Only files.tijorifinance.com URLs are supported');
+  }
+
+  const cacheKey = `doc:${url}`;
+  const cached = get(cacheKey);
+  if (cached) return cached;
+
+  // Fetch through the authenticated Playwright browser so CDN cookies are sent
+  const buffer = await withPage(async (page) => {
+    const bytes = await page.evaluate(async (docUrl) => {
+      const res = await fetch(docUrl, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      const ab = await res.arrayBuffer();
+      return Array.from(new Uint8Array(ab));
+    }, url);
+    return Buffer.from(bytes);
+  });
+
+  const data = await pdfParse(buffer);
+  const result = {
+    url,
+    pages: data.numpages,
+    text: data.text.trim(),
+  };
+
+  set(cacheKey, result, TTL.FINANCIALS);
+  return result;
 }
 
 export async function getRevenueMix(slug) {

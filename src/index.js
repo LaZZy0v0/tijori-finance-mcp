@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 // Import all tools
 import { searchCompany } from './tools/search.js';
-import { getCompanyOverview, getKnowledgeBase, getRevenueMix, getMarketShare } from './tools/company.js';
+import { getCompanyOverview, getKnowledgeBase, fetchDocument, getRevenueMix, getMarketShare } from './tools/company.js';
 import { getFinancials } from './tools/financials.js';
 import { getShareholding } from './tools/shareholding.js';
 import { getOperationalMetrics, getFundFlow } from './tools/metrics.js';
@@ -177,7 +177,17 @@ server.registerTool(
   wrap(({ slug }) => getKnowledgeBase(slug))
 );
 
-// 14. get_revenue_mix
+// 14. fetch_document
+server.registerTool(
+  'fetch_document',
+  {
+    description: 'Fetch and extract text from a Tijori Finance document (PDF). Pass a URL returned by get_knowledge_base. Uses the authenticated browser session to bypass CDN access controls. Returns the full text content and page count.',
+    inputSchema: { url: z.string().url() },
+  },
+  wrap(({ url }) => fetchDocument(url))
+);
+
+// 15. get_revenue_mix
 server.registerTool(
   'get_revenue_mix',
   {

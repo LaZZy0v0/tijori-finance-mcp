@@ -29,6 +29,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
+    "pdf-parse": "^2.4.5",
     "playwright": "^1.60.0",
     "zod": "^4.4.3"
   }
