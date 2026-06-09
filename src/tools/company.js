@@ -92,15 +92,22 @@ export async function fetchDocument(url) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  // Fetch through the authenticated Playwright browser so CDN cookies are sent
+  // Use Playwright's API request context — sends browser cookies but runs at Node.js
+  // level, bypassing CORS restrictions that block JS fetch() from the page context
   const buffer = await withPage(async (page) => {
-    const bytes = await page.evaluate(async (docUrl) => {
-      const res = await fetch(docUrl, { credentials: 'include' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      const ab = await res.arrayBuffer();
-      return Array.from(new Uint8Array(ab));
-    }, url);
-    return Buffer.from(bytes);
+    const response = await page.context().request.get(url, {
+      headers: {
+        'Referer': 'https://www.tijorifinance.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      },
+    });
+    if (!response.ok()) {
+      const status = response.status();
+      if (status === 403) throw new Error('Access denied — session may have expired. Run: npm run reauth');
+      if (status === 404) throw new Error('Document not found at this URL');
+      throw new Error(`HTTP ${status} from CDN`);
+    }
+    return response.body();
   });
 
   const data = await pdfParse(buffer);
