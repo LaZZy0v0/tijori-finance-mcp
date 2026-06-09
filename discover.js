@@ -13,7 +13,7 @@
  */
 
 import { chromium } from 'playwright';
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -66,48 +66,95 @@ function shouldCapture(url) {
   return true;
 }
 
-async function login(context) {
-  const page = await context.newPage();
-  console.log('   Navigating to signin page...');
-  await page.goto(`${BASE_URL}/account/signin/`, { waitUntil: 'domcontentloaded' });
+async function login() {
+  console.log('   Attempting REST API login...');
 
-  console.log('\n   ┌──────────────────────────────────────────────────────────┐');
-  console.log('   │  Browser is open. Log in however you normally would.      │');
-  console.log('   │  Waiting up to 3 minutes for you to complete login...     │');
-  console.log('   └──────────────────────────────────────────────────────────┘\n');
+  const loginPayload = {
+    email: EMAIL,
+    password: PASSWORD,
+  };
 
-  // Poll every second until URL leaves the signin page (up to 3 minutes)
-  const deadline = Date.now() + 3 * 60 * 1000;
-  let loggedIn = false;
-  while (Date.now() < deadline) {
-    const currentUrl = page.url();
-    if (!currentUrl.includes('/signin')) {
-      loggedIn = true;
-      break;
+  try {
+    const response = await fetch(`${BASE_URL}/api/users/account/login/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      },
+      body: JSON.stringify(loginPayload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Login failed with status ${response.status}`);
     }
-    process.stdout.write(`\r   Waiting... current URL: ${currentUrl.slice(0, 80)}`);
-    await page.waitForTimeout(1000);
-  }
 
-  if (!loggedIn) {
-    throw new Error('Timed out — still on signin page after 3 minutes.');
-  }
+    // Extract cookies from Set-Cookie headers (most reliable indicator of success)
+    const setCookieHeaders = response.headers.getSetCookie?.() || [];
+    const cookies = setCookieHeaders.map(header => {
+      const parts = header.split(';');
+      const [name, value] = parts[0].split('=');
+      
+      // Parse cookie attributes
+      const cookie = { 
+        name: name.trim(), 
+        value: value.trim(),
+        domain: '.tijorifinance.com', // Default domain
+        path: '/',
+      };
+      
+      // Extract Path and Domain if present
+      parts.slice(1).forEach(part => {
+        const [key, val] = part.split('=').map(s => s.trim());
+        if (key.toLowerCase() === 'path') {
+          cookie.path = val;
+        } else if (key.toLowerCase() === 'domain') {
+          cookie.domain = val;
+        }
+      });
+      
+      return cookie;
+    });
 
-  console.log(`\n   Logged in! URL: ${page.url()}`);
-  await page.close();
+    // Verify sessionid cookie was set (required for authenticated requests)
+    const hasSessionId = cookies.some(c => c.name === 'sessionid');
+    if (!hasSessionId) {
+      throw new Error('Login response missing sessionid cookie');
+    }
+
+    console.log(`   REST login successful! Got ${cookies.length} cookie(s) including sessionid.`);
+    
+    // Save session in Playwright format (compatible with existing auth.js)
+    const sessionState = {
+      cookies,
+      origins: [{ origin: BASE_URL, localStorage: [] }],
+    };
+
+    writeFileSync(SESSION_PATH, JSON.stringify(sessionState, null, 2));
+    console.log('   Session saved to output/session.json');
+    return sessionState;
+  } catch (err) {
+    throw new Error(`REST login failed: ${err.message}`);
+  }
 }
 
 async function main() {
   mkdirSync(join(__dirname, 'output'), { recursive: true });
+
+  // Clear old session if --reauth flag is used
+  if (FORCE_REAUTH && existsSync(SESSION_PATH)) {
+    unlinkSync(SESSION_PATH);
+    console.log('   Cleared old session file (--reauth flag used).');
+  }
 
   const hasSavedSession = existsSync(SESSION_PATH) && !FORCE_REAUTH;
 
   // ── Step 1: Session ─────────────────────────────────────────────────────────
   console.log('\n[1/3] Session setup...');
 
-  const browser = await chromium.launch({ headless: false }); // visible — easier to debug
+  const browser = await chromium.launch({ headless: true }); // run in background
 
   let context;
+  
   if (hasSavedSession) {
     console.log('   Reusing saved session (skipping login).');
     context = await browser.newContext({
@@ -116,17 +163,13 @@ async function main() {
       viewport: { width: 1440, height: 900 },
     });
   } else {
-    console.log('   No saved session — logging in with email + password...');
+    console.log('   No saved session — logging in via REST API...');
+    const sessionState = await login();
     context = await browser.newContext({
+      storageState: sessionState,
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       viewport: { width: 1440, height: 900 },
     });
-
-    await login(context);
-
-    const storageState = await context.storageState();
-    writeFileSync(SESSION_PATH, JSON.stringify(storageState, null, 2));
-    console.log('   Session saved to output/session.json (future runs skip login).');
   }
 
   // ── Step 2: Intercept + visit pages ─────────────────────────────────────────
