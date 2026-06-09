@@ -105,7 +105,8 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 | `get_fund_flow` | Capital allocation breakdown over 1/3/5/7/10 years |
 | `get_revenue_mix` | Segment breakdown with historical trend per segment |
 | `get_market_share` | Market share % per metric with as-of date |
-| `get_knowledge_base` | Annual reports, earnings releases, investor presentations, conference calls |
+| `get_knowledge_base` | Annual reports, earnings releases, investor presentations, conference calls — returns URLs grouped by type |
+| `fetch_document` | Fetch and extract full text from a PDF URL returned by `get_knowledge_base`. Reads through the authenticated session to bypass CDN access controls |
 | `get_raw_materials` | Commodity price performance — chemicals, spreads, metals |
 | `get_macro_indicators` | India macro — credit, IIP, GST, auto sales, GDP, trade |
 | `get_markets` | Index performance — Nifty, sector indices, conglomerates |
