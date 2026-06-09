@@ -110,7 +110,19 @@ export async function fetchDocument(url) {
     return response.body();
   });
 
-  const data = await pdfParse(buffer);
+  // pdf-parse logs warnings to stdout which corrupts the MCP stdio protocol.
+  // Redirect console output to stderr for the duration of the parse.
+  const origLog = console.log;
+  const origWarn = console.warn;
+  console.log = (...a) => process.stderr.write(a.join(' ') + '\n');
+  console.warn = (...a) => process.stderr.write(a.join(' ') + '\n');
+  let data;
+  try {
+    data = await pdfParse(buffer);
+  } finally {
+    console.log = origLog;
+    console.warn = origWarn;
+  }
   const result = {
     url,
     pages: data.numpages,
