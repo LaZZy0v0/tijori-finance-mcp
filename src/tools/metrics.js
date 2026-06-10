@@ -1,4 +1,4 @@
-import { withPage, browserFetch } from '../browser.js';
+import { loadPage, closePage, browserFetch } from '../browser.js';
 import { get, set, TTL } from '../cache.js';
 
 const BASE_URL = 'https://www.tijorifinance.com';
@@ -26,15 +26,9 @@ export async function getOperationalMetrics(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const result = await withPage(async (page) => {
-    const response = await page.goto(`${BASE_URL}/company/${slug}/`, {
-      waitUntil: 'load',
-      timeout: 30000,
-    });
-
-    if (response?.status() === 404) throw Object.assign(new Error(`Company not found: ${slug}`), { code: 'NOT_FOUND' });
-    if (response?.status() === 403) throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
-
+  const page = await loadPage(`/company/${slug}/`);
+  let result;
+  try {
     // First click attempt
     await clickOperationalTab(page);
     let count = await waitForMetrics(page, 12000);
@@ -94,8 +88,10 @@ export async function getOperationalMetrics(slug) {
       }
     }));
 
-    return { slug, company_id: companyId, metrics: metricData };
-  });
+    result = { slug, company_id: companyId, metrics: metricData };
+  } finally {
+    await closePage(page);
+  }
 
   set(cacheKey, result, TTL.METRICS);
   return result;

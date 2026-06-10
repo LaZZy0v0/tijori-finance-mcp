@@ -12,7 +12,7 @@ export async function getRawMaterials(tab) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage('/in/raw-materials');
+  const page = await loadPage('/in/raw-materials', { waitFor: 'table.dataTable' });
   try {
     const result = await parseRawMaterials(page, tab);
     set(cacheKey, result, TTL.RAW_MATERIALS);
@@ -28,7 +28,7 @@ export async function getMacroIndicators(tab) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage('/in/macro');
+  const page = await loadPage('/in/macro', { waitFor: 'table.dataTable' });
   try {
     const result = await parseMacroIndicators(page, tab);
     set(cacheKey, result, TTL.MACRO);
@@ -44,7 +44,7 @@ export async function getMarkets(tab) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage('/in/markets');
+  const page = await loadPage('/in/markets', { waitFor: 'table.dataTable' });
   try {
     const result = await parseMarkets(page, tab);
     set(cacheKey, result, TTL.MARKETS);

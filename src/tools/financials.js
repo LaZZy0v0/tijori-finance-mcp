@@ -13,7 +13,7 @@ export async function getFinancials(slug, type) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage(`/company/${slug}/financials/`);
+  const page = await loadPage(`/company/${slug}/financials/`, { waitFor: 'table.dataTable' });
   try {
     const result = await parseFinancials(page, type);
     set(cacheKey, result, TTL.FINANCIALS);

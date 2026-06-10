@@ -1,4 +1,4 @@
-import { loadPage, closePage, withPage, withContext } from '../browser.js';
+import { loadPage, closePage, withContext } from '../browser.js';
 import { parseOverview } from '../parsers/overview.js';
 import { get, set, TTL } from '../cache.js';
 import { createRequire } from 'module';
@@ -21,7 +21,7 @@ export async function getCompanyOverview(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage(`/company/${slug}/`);
+  const page = await loadPage(`/company/${slug}/`, { waitFor: '.custom_ratio' });
   try {
     const result = await parseOverview(page);
     set(cacheKey, result, TTL.FINANCIALS);
@@ -36,17 +36,15 @@ export async function getKnowledgeBase(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const result = await withPage(async (page) => {
-    const response = await page.goto(`${BASE_URL}/company/${slug}/`, { waitUntil: 'load', timeout: 30000 });
-    if (response?.status() === 404) throw Object.assign(new Error(`Company not found: ${slug}`), { code: 'NOT_FOUND' });
-    if (response?.status() === 403) throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
-
+  const page = await loadPage(`/company/${slug}/`);
+  let result;
+  try {
     const clicked = await page.locator('a[href="#knowledgebase"]').click({ timeout: 5000 }).then(() => true).catch(() => false);
     if (!clicked) await page.evaluate(() => { window.location.hash = 'knowledgebase'; });
 
     await page.waitForSelector('#knowledgebase a[href]', { timeout: 10000 }).catch(() => {});
 
-    return page.evaluate(() => {
+    result = await page.evaluate(() => {
       const section = document.querySelector('#knowledgebase');
       if (!section) return null;
 
@@ -84,7 +82,9 @@ export async function getKnowledgeBase(slug) {
 
       return categories;
     });
-  });
+  } finally {
+    await closePage(page);
+  }
 
   if (!result) throw new Error('Knowledge Base section did not load');
   const final = { slug, ...result };
@@ -132,11 +132,9 @@ export async function getRevenueMix(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const result = await withPage(async (page) => {
-    const response = await page.goto(`${BASE_URL}/company/${slug}/`, { waitUntil: 'load', timeout: 30000 });
-    if (response?.status() === 404) throw Object.assign(new Error(`Company not found: ${slug}`), { code: 'NOT_FOUND' });
-    if (response?.status() === 403) throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
-
+  const page = await loadPage(`/company/${slug}/`);
+  let result;
+  try {
     const clicked = await page.locator('a[href="#revenuemix"]').click({ timeout: 5000 }).then(() => true).catch(() => false);
     if (!clicked) await page.evaluate(() => { window.location.hash = 'revenuemix'; });
 
@@ -179,8 +177,10 @@ export async function getRevenueMix(slug) {
       }
     }));
 
-    return { slug, charts: chartsWithHistory };
-  });
+    result = { slug, charts: chartsWithHistory };
+  } finally {
+    await closePage(page);
+  }
 
   set(cacheKey, result, TTL.FINANCIALS);
   return result;
@@ -191,11 +191,9 @@ export async function getMarketShare(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const result = await withPage(async (page) => {
-    const response = await page.goto(`${BASE_URL}/company/${slug}/`, { waitUntil: 'load', timeout: 30000 });
-    if (response?.status() === 404) throw Object.assign(new Error(`Company not found: ${slug}`), { code: 'NOT_FOUND' });
-    if (response?.status() === 403) throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
-
+  const page = await loadPage(`/company/${slug}/`);
+  let result;
+  try {
     const clicked = await page.locator('a[href="#marketshare"]').click({ timeout: 5000 }).then(() => true).catch(() => false);
     if (!clicked) await page.evaluate(() => { window.location.hash = 'marketshare'; });
 
@@ -214,9 +212,15 @@ export async function getMarketShare(slug) {
       })
     );
 
-    if (metrics.length === 0) throw new Error('Market Share section did not load');
-    return { slug, metrics };
-  });
+    // Empty is a valid answer: most companies (non-lenders like MTAR) simply have no
+    // market-share metrics. Return an empty list with a note rather than throwing — an
+    // error would make the calling agent treat "no data" as a failure and retry in a loop.
+    result = metrics.length === 0
+      ? { slug, metrics: [], note: 'No market share data available for this company.' }
+      : { slug, metrics };
+  } finally {
+    await closePage(page);
+  }
 
   set(cacheKey, result, TTL.FINANCIALS);
   return result;

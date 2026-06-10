@@ -126,6 +126,16 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 
 ---
 
+## What's New
+
+### 2026-06-10 — Reliability & performance
+
+- **Long, multi-tool queries no longer time out.** Asking for a full workup in one go — e.g. *"build a model for MTAR: overview + financials + concall + revenue mix + operational KPIs"* — used to overwhelm the browser and fail with `page.goto: Timeout` errors. Page loads are now faster (ads, trackers and images are skipped), capped to a safe number of concurrent loads, and retried once on a transient timeout. Tools also wait for the actual data to render rather than a fixed delay, so you get complete results instead of half-loaded ones.
+- **Fixed a startup browser leak.** A burst of parallel tool calls on a cold start could spin up several Chromium instances and leave most of them orphaned. It now launches exactly one and shares it.
+- **`get_market_share` returns cleanly when there's no data.** For companies that simply have no market-share metrics (most non-lenders), it now returns an empty result with a note instead of erroring — which previously made the assistant retry the same call in a loop.
+
+---
+
 ## Setup
 
 ### Requirements

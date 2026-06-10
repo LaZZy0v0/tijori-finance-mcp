@@ -7,7 +7,7 @@ export async function getShareholding(slug) {
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const page = await loadPage(`/company/${slug}/shareholding/`);
+  const page = await loadPage(`/company/${slug}/shareholding/`, { waitFor: 'table.dataTable' });
   try {
     const result = await parseShareholding(page);
     set(cacheKey, result, TTL.SHAREHOLDING);

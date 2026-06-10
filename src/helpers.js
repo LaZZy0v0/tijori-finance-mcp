@@ -1,27 +1,17 @@
-import { withPage } from './browser.js';
+import { loadPage, closePage } from './browser.js';
 import { get, set, TTL } from './cache.js';
-
-const BASE_URL = 'https://www.tijorifinance.com';
 
 export async function resolveCompanyIds(slug) {
   const cacheKey = `resolve:${slug}`;
   const cached = get(cacheKey);
   if (cached) return cached;
 
-  const result = await withPage(async (page) => {
-    const response = await page.goto(`${BASE_URL}/company/${slug}/`, {
-      waitUntil: 'load',
-      timeout: 30000,
-    });
-
-    if (response?.status() === 404) {
-      throw Object.assign(new Error(`Company not found: ${slug}`), { code: 'NOT_FOUND' });
-    }
-    if (response?.status() === 403) {
-      throw Object.assign(new Error('Session expired. Run: node discover.js --reauth'), { code: 'SESSION_EXPIRED' });
-    }
-
-    return page.evaluate(() => {
+  // The ids live in a server-rendered inline <script> JSON blob, so the page DOM
+  // (domcontentloaded) is enough — no client-rendered anchor to wait for.
+  const page = await loadPage(`/company/${slug}/`);
+  let result;
+  try {
+    result = await page.evaluate(() => {
       const html = document.documentElement.innerHTML;
 
       // company_id: from inline script JSON blob
@@ -35,7 +25,9 @@ export async function resolveCompanyIds(slug) {
 
       return { company_id: companyId, name, symbol };
     });
-  });
+  } finally {
+    await closePage(page);
+  }
 
   const final = { slug, ...result };
   set(cacheKey, final, TTL.METRICS);
