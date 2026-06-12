@@ -159,7 +159,16 @@ The setup script handles everything automatically: installs packages, downloads 
 5. Follow the prompts — enter your Tijori email/password, then log in through the browser window that opens
 6. **Fully quit and reopen Claude Desktop**
 
-**Mac / Linux**
+**Mac**
+
+1. [Download Node.js](https://nodejs.org) and install it (choose LTS)
+2. [Download Claude Desktop](https://claude.ai/download) and install it
+3. [Download this repo](https://github.com/LaZZy0v0/tijori-finance-mcp/archive/refs/heads/master.zip) and unzip it anywhere
+4. Double-click **`setup.command`** inside the folder — if macOS blocks it ("unidentified developer"), right-click the file and choose **Open** the first time
+5. Follow the prompts — enter your Tijori email/password, then log in through the browser window that opens
+6. **Fully quit and reopen Claude Desktop** (Cmd+Q, not just closing the window)
+
+**Linux (or any terminal)**
 
 ```bash
 git clone https://github.com/LaZZy0v0/tijori-finance-mcp.git
