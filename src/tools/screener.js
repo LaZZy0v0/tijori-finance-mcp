@@ -209,7 +209,7 @@ async function runPreset(preset, limit) {
 // Ad-hoc screening
 // ---------------------------------------------------------------------------
 
-export async function screenCompanies({ filters, alternate, preset, limit = DEFAULT_LIMIT }) {
+export async function screenCompanies({ filters, alternate, preset, latest_results_only = false, superstar_investors = false, sme = false, limit = DEFAULT_LIMIT }) {
   if (preset) {
     const cacheKey = `screener:preset:${preset.toLowerCase()}:${limit}`;
     const cached = get(cacheKey);
@@ -219,7 +219,7 @@ export async function screenCompanies({ filters, alternate, preset, limit = DEFA
     return result;
   }
 
-  if (!filters && !alternate?.trim()) {
+  if (!filters && !alternate?.trim() && !superstar_investors && !sme) {
     throw new Error("Pass 'filters' (a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or an object like { roe: { min: 15 } }), 'alternate' (a business-data query like 'market share > 50' or 'revenue from Defence > 50'), or 'preset' (a popular screen name from list_popular_screens).");
   }
 
@@ -236,13 +236,16 @@ export async function screenCompanies({ filters, alternate, preset, limit = DEFA
   }
   const altQuery = alternate?.trim() ?? '';
 
-  const cacheKey = `screener:${query}|${altQuery}:${limit}`;
+  const cacheKey = `screener:${query}|${altQuery}|${latest_results_only}|${superstar_investors}|${sme}:${limit}`;
   const cached = get(cacheKey);
   if (cached) return cached;
 
   const result = await runScreenerApi('/api/filter_queries/advanced_search/', {
     financial: query,
     alternate: altQuery,
+    is_checked: latest_results_only ? 'True' : 'False',
+    whales: superstar_investors ? 'True' : 'False',
+    is_sme: sme ? 'True' : 'False',
     source: 'Basic',
   }, limit);
   if (query) result.query = query;

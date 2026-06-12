@@ -132,6 +132,7 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 ### 2026-06-12 — Screener overhaul
 
 - **Alternate data queries.** The Advanced Screener's second box now works ad-hoc: `screen_companies({ alternate: "market share > 50" })` or `{ alternate: "revenue from Defence > 50", filters: "Market Capitalization > 1000" }`. Relationships: `makes`, `revenue from`, `market share`, `uses`, `caters to`, `has plant in`, combinable with AND/OR/NOT.
+- **The three screener checkboxes.** `latest_results_only` (only companies that reported the latest quarter), `superstar_investors` (only companies a whale investor holds, with the holder named per row), and `sme` (search the SME-listed universe).
 
 - **Popular screens actually run now.** `list_popular_screens` previously returned queries with the `AND` glued to the next field name (newlines in the page's links were being stripped), and dropped each screen's category, description, market-share query, and superstar-investor flag. It now returns all of those, and `screen_companies { preset: "Monopoly Companies" }` runs any of them through the same endpoint the website uses — including the ones advanced queries can't express.
 - **The advanced screener exposes Tijori's full query language.** Queries support every field in Tijori's catalog, `%` values (`ROCE > 20%`), comparisons between fields (`Net Sales > 3Yrs ago Net Sales`), and arithmetic (`capex/Net Block > 0.5`).

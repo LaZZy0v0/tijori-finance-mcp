@@ -54,6 +54,17 @@ try {
   const alt3 = await screenCompanies({ alternate: 'revenue from Defence > 50', limit: 5 });
   check('alternate revenue-from: results', alt3.total_results >= 5, JSON.stringify(alt3).slice(0, 200));
 
+  // 3c. checkbox flags
+  const base = await screenCompanies({ filters: 'Market Capitalization > 500', limit: 1 });
+  const fl1 = await screenCompanies({ filters: 'Market Capitalization > 500', superstar_investors: true, limit: 3 });
+  check('flag superstar_investors: narrows + whales column', fl1.total_results < base.total_results && 'whales' in fl1.results[0], JSON.stringify(fl1).slice(0, 200));
+
+  const fl2 = await screenCompanies({ filters: 'Market Capitalization > 500', latest_results_only: true, limit: 1 });
+  check('flag latest_results_only: narrows', fl2.total_results < base.total_results, `${fl2.total_results} vs ${base.total_results}`);
+
+  const fl3 = await screenCompanies({ filters: 'Market Capitalization > 50', sme: true, limit: 3 });
+  check('flag sme: different universe', fl3.total_results > 50 && !fl3.results.some(r => r.name === base.results[0].name), JSON.stringify(fl3).slice(0, 200));
+
   // 4. field search
   const f1 = await searchScreenerFields({ query: 'roce' });
   check('fields: roce variants', f1.total_matches >= 10 && f1.fields.some(f => f.name === '3yr Avg ROCE'), JSON.stringify(f1).slice(0, 300));
