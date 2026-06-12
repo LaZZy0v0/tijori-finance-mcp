@@ -9,7 +9,7 @@ import { getFinancials } from './tools/financials.js';
 import { getShareholding } from './tools/shareholding.js';
 import { getOperationalMetrics, getFundFlow } from './tools/metrics.js';
 import { getRawMaterials, getMacroIndicators, getMarkets, getNicheConstituents, getConglomerateConstituents } from './tools/market.js';
-import { screenCompanies, listPopularScreens } from './tools/screener.js';
+import { screenCompanies, listPopularScreens, searchScreenerFields } from './tools/screener.js';
 import { resolveCompanyIds } from './helpers.js';
 import { closeBrowser } from './browser.js';
 
@@ -211,7 +211,7 @@ server.registerTool(
 server.registerTool(
   'list_popular_screens',
   {
-    description: 'List all pre-built popular stock screens on Tijori Finance (e.g. "Dividend Superstars", "Cash Flow Machines"). Use the name with screen_companies { preset } to run one.',
+    description: 'List all pre-built popular stock screens on Tijori Finance, grouped by category, with each screen\'s name, description, and underlying query. Run one with screen_companies { preset: "<name>" }.',
     inputSchema: {},
   },
   wrap(() => listPopularScreens())
@@ -221,15 +221,30 @@ server.registerTool(
 server.registerTool(
   'screen_companies',
   {
-    description: "Screen companies by financial metrics. 'filters' accepts a query string like '( ROE > 15 ) and ( Debt to Equity Ratio < 0.5 )' or shorthand object like {roe:{min:15}, debt_to_equity:{max:0.5}}. Shorthands: roe, roce, pe, pb, market_cap, opm, pat, eps, dividend_yield, nim, casa, gross_npa, ev_ebitda, fcf. Any exact Tijori field name works too e.g. 'Last Year ROE', '3yr Avg ROCE', '3yr Growth PAT'.",
+    description: "Screen companies by financial metrics. Pass EITHER 'preset' (a popular screen name from list_popular_screens, e.g. 'Cash Flow Machines') OR 'filters'. 'filters' accepts a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or a shorthand object like {roe:{min:15}, debt_to_equity:{max:0.5}}. Query strings support any field name from search_screener_fields, % values ('ROCE > 20%'), field-vs-field comparisons ('Net Sales > 3Yrs ago Net Sales'), and arithmetic ('capex/Net Block > 0.5'). 'limit' caps returned rows (default 50); total_results always reports the full match count.",
     inputSchema: {
       filters: z.union([
         z.string(),
         z.record(z.object({ min: z.number().optional(), max: z.number().optional() })),
-      ]),
+      ]).optional(),
+      preset: z.string().optional(),
+      limit: z.number().int().positive().max(500).optional(),
     },
   },
   wrap((args) => screenCompanies(args))
+);
+
+// 18. search_screener_fields
+server.registerTool(
+  'search_screener_fields',
+  {
+    description: "Search Tijori's screener field catalog (~1,500 financial metrics with time-period variants like '3yr Avg ROCE', '5yr Growth Net Sales', '10Yrs ago PAT', plus product segments and regions). Use to find the exact field name before building a screen_companies query. Example: query 'promoter holding' or 'npa'.",
+    inputSchema: {
+      query: z.string().min(1),
+      type: z.enum(['Financials', 'Products', 'Regions']).optional(),
+    },
+  },
+  wrap((args) => searchScreenerFields(args))
 );
 
 async function main() {
