@@ -44,6 +44,16 @@ try {
   const bad = await screenCompanies({ filters: 'Nonexistent Gibberish Metric > 5' }).catch(e => e);
   check('adhoc bad query: throws clear error', bad instanceof Error, JSON.stringify(bad).slice(0, 200));
 
+  // 3b. alternate (business-data) queries
+  const alt1 = await screenCompanies({ alternate: 'market share > 50', limit: 5 });
+  check('alternate only: results', alt1.total_results > 100 && alt1.alternate_query === 'market share > 50', JSON.stringify(alt1).slice(0, 200));
+
+  const alt2 = await screenCompanies({ filters: 'Market Capitalization > 1000', alternate: 'market share > 40', limit: 5 });
+  check('alternate + financial: results', alt2.total_results > 50 && alt2.total_results < 1000, JSON.stringify(alt2).slice(0, 200));
+
+  const alt3 = await screenCompanies({ alternate: 'revenue from Defence > 50', limit: 5 });
+  check('alternate revenue-from: results', alt3.total_results >= 5, JSON.stringify(alt3).slice(0, 200));
+
   // 4. field search
   const f1 = await searchScreenerFields({ query: 'roce' });
   check('fields: roce variants', f1.total_matches >= 10 && f1.fields.some(f => f.name === '3yr Avg ROCE'), JSON.stringify(f1).slice(0, 300));

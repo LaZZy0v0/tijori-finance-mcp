@@ -221,12 +221,13 @@ server.registerTool(
 server.registerTool(
   'screen_companies',
   {
-    description: "Screen companies by financial metrics. Pass EITHER 'preset' (a popular screen name from list_popular_screens, e.g. 'Cash Flow Machines') OR 'filters'. 'filters' accepts a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or a shorthand object like {roe:{min:15}, debt_to_equity:{max:0.5}}. Query strings support any field name from search_screener_fields, % values ('ROCE > 20%'), field-vs-field comparisons ('Net Sales > 3Yrs ago Net Sales'), and arithmetic ('capex/Net Block > 0.5'). 'limit' caps returned rows (default 50); total_results always reports the full match count.",
+    description: "Screen companies by financial metrics and/or business data. Pass 'preset' (a popular screen name from list_popular_screens, e.g. 'Cash Flow Machines'), OR 'filters' and/or 'alternate'. 'filters' accepts a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or a shorthand object like {roe:{min:15}, debt_to_equity:{max:0.5}}. Query strings support any field name from search_screener_fields, % values ('ROCE > 20%'), field-vs-field comparisons ('Net Sales > 3Yrs ago Net Sales'), and arithmetic ('capex/Net Block > 0.5'). 'alternate' is a business-data query using relationships: 'makes <product>', 'revenue from <product/region> > N', 'market share > N', 'uses <product>', 'caters to <product>', 'has plant in <region>' — combinable with AND/OR/NOT, e.g. 'market share > 50' or 'revenue from Defence > 50'. Product/region names come from search_screener_fields with type Products/Regions. 'limit' caps returned rows (default 50); total_results always reports the full match count.",
     inputSchema: {
       filters: z.union([
         z.string(),
         z.record(z.object({ min: z.number().optional(), max: z.number().optional() })),
       ]).optional(),
+      alternate: z.string().optional(),
       preset: z.string().optional(),
       limit: z.number().int().positive().max(500).optional(),
     },

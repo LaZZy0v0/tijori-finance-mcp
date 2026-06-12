@@ -119,7 +119,7 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 | Tool | What it does |
 |---|---|
 | `list_popular_screens` | Browse Tijori's pre-built stock screens, grouped by category, with each screen's description and underlying query |
-| `screen_companies` | Run a popular screen by name (`preset`) or screen 5,000+ stocks with Tijori's full query language — `%` values, field-vs-field comparisons, arithmetic like `capex/Net Block > 0.5` |
+| `screen_companies` | Run a popular screen by name (`preset`) or screen 5,000+ stocks with Tijori's full query language — `%` values, field-vs-field comparisons, arithmetic like `capex/Net Block > 0.5`, plus business-data queries (`alternate`) like `market share > 50` or `revenue from Defence > 50` |
 | `search_screener_fields` | Search the ~1,500-metric field catalog (with time-period variants like `3yr Avg ROCE`, `10Yrs ago PAT`) to find exact field names for `screen_companies` |
 | `analyze_portfolio` | Pass a list of company slugs — get back sector distribution, weighted avg PE/ROE/OPM, forensics spread, and promoter pledge flags across the whole portfolio |
 
@@ -130,6 +130,8 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 ## What's New
 
 ### 2026-06-12 — Screener overhaul
+
+- **Alternate data queries.** The Advanced Screener's second box now works ad-hoc: `screen_companies({ alternate: "market share > 50" })` or `{ alternate: "revenue from Defence > 50", filters: "Market Capitalization > 1000" }`. Relationships: `makes`, `revenue from`, `market share`, `uses`, `caters to`, `has plant in`, combinable with AND/OR/NOT.
 
 - **Popular screens actually run now.** `list_popular_screens` previously returned queries with the `AND` glued to the next field name (newlines in the page's links were being stripped), and dropped each screen's category, description, market-share query, and superstar-investor flag. It now returns all of those, and `screen_companies { preset: "Monopoly Companies" }` runs any of them through the same endpoint the website uses — including the ones advanced queries can't express.
 - **The advanced screener exposes Tijori's full query language.** Queries support every field in Tijori's catalog, `%` values (`ROCE > 20%`), comparisons between fields (`Net Sales > 3Yrs ago Net Sales`), and arithmetic (`capex/Net Block > 0.5`).

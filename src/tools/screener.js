@@ -209,7 +209,7 @@ async function runPreset(preset, limit) {
 // Ad-hoc screening
 // ---------------------------------------------------------------------------
 
-export async function screenCompanies({ filters, preset, limit = DEFAULT_LIMIT }) {
+export async function screenCompanies({ filters, alternate, preset, limit = DEFAULT_LIMIT }) {
   if (preset) {
     const cacheKey = `screener:preset:${preset.toLowerCase()}:${limit}`;
     const cached = get(cacheKey);
@@ -219,29 +219,34 @@ export async function screenCompanies({ filters, preset, limit = DEFAULT_LIMIT }
     return result;
   }
 
-  if (!filters) {
-    throw new Error("Pass 'filters' (a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or an object like { roe: { min: 15 } }) or 'preset' (a popular screen name from list_popular_screens).");
+  if (!filters && !alternate?.trim()) {
+    throw new Error("Pass 'filters' (a query string like '( ROE > 15 ) and ( Market Capitalization > 500 )' or an object like { roe: { min: 15 } }), 'alternate' (a business-data query like 'market share > 50' or 'revenue from Defence > 50'), or 'preset' (a popular screen name from list_popular_screens).");
   }
 
-  let query;
-  if (typeof filters === 'string') {
-    query = filters.trim();
-    if (!query) throw new Error('filters query string must not be empty');
-  } else if (typeof filters === 'object') {
-    query = buildQuery(filters);
-  } else {
-    throw new Error('filters must be a query string or object');
+  let query = '';
+  if (filters !== undefined) {
+    if (typeof filters === 'string') {
+      query = filters.trim();
+      if (!query && !alternate?.trim()) throw new Error('filters query string must not be empty');
+    } else if (typeof filters === 'object') {
+      query = buildQuery(filters);
+    } else {
+      throw new Error('filters must be a query string or object');
+    }
   }
+  const altQuery = alternate?.trim() ?? '';
 
-  const cacheKey = `screener:${query}:${limit}`;
+  const cacheKey = `screener:${query}|${altQuery}:${limit}`;
   const cached = get(cacheKey);
   if (cached) return cached;
 
   const result = await runScreenerApi('/api/filter_queries/advanced_search/', {
     financial: query,
+    alternate: altQuery,
     source: 'Basic',
   }, limit);
-  result.query = query;
+  if (query) result.query = query;
+  if (altQuery) result.alternate_query = altQuery;
 
   set(cacheKey, result, TTL.METRICS);
   return result;
