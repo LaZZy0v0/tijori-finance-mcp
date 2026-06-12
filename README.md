@@ -137,7 +137,7 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 - **Popular screens actually run now.** `list_popular_screens` previously returned queries with the `AND` glued to the next field name (newlines in the page's links were being stripped), and dropped each screen's category, description, market-share query, and superstar-investor flag. It now returns all of those, and `screen_companies { preset: "Monopoly Companies" }` runs any of them through the same endpoint the website uses — including the ones advanced queries can't express.
 - **The advanced screener exposes Tijori's full query language.** Queries support every field in Tijori's catalog, `%` values (`ROCE > 20%`), comparisons between fields (`Net Sales > 3Yrs ago Net Sales`), and arithmetic (`capex/Net Block > 0.5`).
 - **New `search_screener_fields` tool.** Tijori has ~1,500 financial metrics once you count time-period variants (`3yr Avg ROCE`, `5yr Growth Net Sales`, `10Yrs ago PAT`…). Search the catalog to find the exact name, then use it in a query.
-- **Result caps.** Screens used to return every matching row (1,000+ for loose queries). Results are now capped at 50 by default (`limit` raises it); `total_results` still reports the full count.
+- **Result caps + pagination.** Screens used to return every matching row (1,000+ for loose queries). Results are now capped at 50 by default (`limit` raises it) and `offset` pages through the rest — "show me the next 50" is served instantly from cache without re-querying Tijori. `total_results` always reports the full count.
 
 ### 2026-06-10 — Reliability & performance
 

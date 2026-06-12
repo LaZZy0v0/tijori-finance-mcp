@@ -98,7 +98,9 @@ function stripSpans(results) {
   });
 }
 
-async function runScreenerApi(endpoint, params, limit) {
+// Fetches ALL matching rows (the API is unpaginated). Callers cache this full
+// set and page through it with paginate() — offset requests never re-hit Tijori.
+async function runScreenerApi(endpoint, params) {
   const search = new URLSearchParams({
     financial: '',
     alternate: '',
@@ -118,12 +120,20 @@ async function runScreenerApi(endpoint, params, limit) {
   if (raw?.error) throw new Error(`Screener API error: ${raw.error}`);
 
   const results = stripSpans(Array.isArray(raw) ? raw : raw?.data ?? []);
-  const total = raw?.total_results ?? results.length;
+  return { total_results: raw?.total_results ?? results.length, results };
+}
+
+function paginate({ total_results, results }, offset, limit) {
+  const page = results.slice(offset, offset + limit);
+  const shownThrough = offset + page.length;
   return {
-    total_results: total,
-    returned: Math.min(results.length, limit),
-    ...(total > limit ? { note: `Showing first ${limit} of ${total}. Pass a higher 'limit' or tighten the query for more.` } : {}),
-    results: results.slice(0, limit),
+    total_results,
+    returned: page.length,
+    ...(offset > 0 ? { offset } : {}),
+    ...(shownThrough < total_results
+      ? { note: `Showing rows ${offset + 1}–${shownThrough} of ${total_results}. Pass offset: ${shownThrough} for the next batch.` }
+      : {}),
+    results: page,
   };
 }
 
@@ -181,7 +191,7 @@ export async function listPopularScreens() {
   return fetchPopularScreens();
 }
 
-async function runPreset(preset, limit) {
+async function runPreset(preset, offset, limit) {
   const screens = await fetchPopularScreens();
   const needle = preset.toLowerCase().trim();
   const screen =
@@ -191,32 +201,32 @@ async function runPreset(preset, limit) {
     throw new Error(`No popular screen matching "${preset}". Available: ${screens.map(s => s.name).join(', ')}`);
   }
 
-  // Presets must run through the popular-query endpoint: it resolves the saved
-  // query_id server-side, which is what makes alternate (market-share style)
-  // queries work — advanced_search silently ignores them.
-  const result = await runScreenerApi('/api/filter_queries/popular-query/results/', {
-    financial: screen.query ?? '',
-    alternate: screen.alternate_query ?? '',
-    whales: screen.whales ? 'True' : 'False',
-    source: 'Popular',
-    query_id: screen.query_id ?? 'null',
-  }, limit);
+  const cacheKey = `screener:preset:${screen.name}`;
+  let full = get(cacheKey);
+  if (!full) {
+    // Presets must run through the popular-query endpoint: it resolves the saved
+    // query_id server-side, which is what makes alternate (market-share style)
+    // queries work — advanced_search silently ignores them.
+    full = await runScreenerApi('/api/filter_queries/popular-query/results/', {
+      financial: screen.query ?? '',
+      alternate: screen.alternate_query ?? '',
+      whales: screen.whales ? 'True' : 'False',
+      source: 'Popular',
+      query_id: screen.query_id ?? 'null',
+    });
+    set(cacheKey, full, TTL.METRICS);
+  }
 
-  return { screen: screen.name, query: screen.query ?? screen.alternate_query, ...result };
+  return { screen: screen.name, query: screen.query ?? screen.alternate_query, ...paginate(full, offset, limit) };
 }
 
 // ---------------------------------------------------------------------------
 // Ad-hoc screening
 // ---------------------------------------------------------------------------
 
-export async function screenCompanies({ filters, alternate, preset, latest_results_only = false, superstar_investors = false, sme = false, limit = DEFAULT_LIMIT }) {
+export async function screenCompanies({ filters, alternate, preset, latest_results_only = false, superstar_investors = false, sme = false, offset = 0, limit = DEFAULT_LIMIT }) {
   if (preset) {
-    const cacheKey = `screener:preset:${preset.toLowerCase()}:${limit}`;
-    const cached = get(cacheKey);
-    if (cached) return cached;
-    const result = await runPreset(preset, limit);
-    set(cacheKey, result, TTL.METRICS);
-    return result;
+    return runPreset(preset, offset, limit);
   }
 
   if (!filters && !alternate?.trim() && !superstar_investors && !sme) {
@@ -236,22 +246,23 @@ export async function screenCompanies({ filters, alternate, preset, latest_resul
   }
   const altQuery = alternate?.trim() ?? '';
 
-  const cacheKey = `screener:${query}|${altQuery}|${latest_results_only}|${superstar_investors}|${sme}:${limit}`;
-  const cached = get(cacheKey);
-  if (cached) return cached;
+  const cacheKey = `screener:${query}|${altQuery}|${latest_results_only}|${superstar_investors}|${sme}`;
+  let full = get(cacheKey);
+  if (!full) {
+    full = await runScreenerApi('/api/filter_queries/advanced_search/', {
+      financial: query,
+      alternate: altQuery,
+      is_checked: latest_results_only ? 'True' : 'False',
+      whales: superstar_investors ? 'True' : 'False',
+      is_sme: sme ? 'True' : 'False',
+      source: 'Basic',
+    });
+    set(cacheKey, full, TTL.METRICS);
+  }
 
-  const result = await runScreenerApi('/api/filter_queries/advanced_search/', {
-    financial: query,
-    alternate: altQuery,
-    is_checked: latest_results_only ? 'True' : 'False',
-    whales: superstar_investors ? 'True' : 'False',
-    is_sme: sme ? 'True' : 'False',
-    source: 'Basic',
-  }, limit);
+  const result = paginate(full, offset, limit);
   if (query) result.query = query;
   if (altQuery) result.alternate_query = altQuery;
-
-  set(cacheKey, result, TTL.METRICS);
   return result;
 }
 

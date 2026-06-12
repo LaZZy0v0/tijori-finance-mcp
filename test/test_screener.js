@@ -54,6 +54,14 @@ try {
   const alt3 = await screenCompanies({ alternate: 'revenue from Defence > 50', limit: 5 });
   check('alternate revenue-from: results', alt3.total_results >= 5, JSON.stringify(alt3).slice(0, 200));
 
+  // 3b2. pagination
+  const pg1 = await screenCompanies({ filters: 'Market Capitalization > 500', limit: 5 });
+  const pg2 = await screenCompanies({ filters: 'Market Capitalization > 500', offset: 5, limit: 5 });
+  check('offset: next page differs', pg2.results.length === 5 && pg1.results[0].name !== pg2.results[0].name && pg2.offset === 5, JSON.stringify(pg2).slice(0, 200));
+  check('offset: note points to next batch', /offset: 10/.test(pg2.note ?? ''), pg2.note);
+  const pgEnd = await screenCompanies({ filters: 'Market Capitalization > 500', offset: 1e7, limit: 5 });
+  check('offset past end: empty, no note', pgEnd.returned === 0 && !pgEnd.note, JSON.stringify(pgEnd).slice(0, 150));
+
   // 3c. checkbox flags
   const base = await screenCompanies({ filters: 'Market Capitalization > 500', limit: 1 });
   const fl1 = await screenCompanies({ filters: 'Market Capitalization > 500', superstar_investors: true, limit: 3 });
