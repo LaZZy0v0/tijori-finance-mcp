@@ -2,7 +2,7 @@
 
 This document exists so that any future session — human or model — inherits what was learned building this server instead of re-deriving it. Most of what's below was discovered by driving the live site, capturing its network traffic, and reading its JavaScript; very little of it is guessable from the code alone.
 
-Last updated: 2026-06-12.
+Last updated: 2026-06-14.
 
 ---
 
@@ -123,8 +123,41 @@ MCP responses land in the model's context. Rules of thumb used throughout: defau
 
 ## 9. Known gaps / future work
 
-- **Basic "Stock Screener" tab** (structured industry/location/raw-material checkbox filters) is not replicated. Industry filtering is partially achievable via alternate `makes <product>` queries.
-- **Saved Screens / Public Screens** tabs: not implemented (no endpoints discovered yet).
+### Resolved by live exploration (2026-06-14)
+
+The 5 filter tabs live at: Popular `/filter/popular-queries/`, **Stock Screener (basic)**
+`/filter/?qt=basic`, **Advanced** `/filter/?qt=advanced`, **Saved** `/filter/saved-queries/`,
+**Public** `/filter/public-queries/`.
+
+- **`Productsp` entity type — non-actionable, no work needed.** `filter_field_search`
+  **silently ignores `entity_types`** (the "unknown params ignored" trap again): passing
+  `entity_types=Productsp`, `Products`, or any combination all return the *same* unified
+  3,308-entry catalog typed only `Products` / `Financials` / `Regions`. Granular sub-products
+  (Steel Files, High Speed Steel, Steel Slab…) are **already in the `Products` list**, so
+  `search_screener_fields({ type: 'Products' })` already surfaces everything Productsp could.
+  The UI's per-relationship `entity_types` autocomplete narrowing is cosmetic; the backend
+  taxonomy is just those 3 types.
+- **Basic "Stock Screener" tab — UI sugar over `advanced_search`, not a new endpoint.**
+  `basic-filter.js` compiles its checkbox groups (financial, market, shareholding, and the
+  alternate categories `industry` / `location` / `raw_material` / `market_share`) into the
+  same `fq` (financial) + `aq` (alternate) strings the Advanced Screener uses, then submits to
+  `advanced_search`. Its "edit query" link is literally `/filter/?fq=…&aq=…`. So `screen_companies`
+  already covers it; the only thing not yet mapped is the exact checkbox→`aq`-token vocabulary
+  for industry/location/raw-material (would need a UI-driven capture to enumerate).
+- **Saved / Public Screens — endpoint FOUND** (was "no endpoints discovered yet"):
+  `GET /api/filter_queries/search/?[owner=true&]limit=&offset=`. No `owner` ⇒ **public**
+  community screens (379 of them); `owner=true` ⇒ the logged-in user's own saved screens.
+  Each row is **runnable as-is**: `{ id, name, description, financial_query, alt_query,
+  extra_cols, created_at, created_by:{id,full_name}, is_public }` — feed `financial_query`→
+  `screen_companies.filters` and `alt_query`→`alternate` (no dedicated run endpoint needed).
+  Saving a screen is `POST /api/filter_queries/create/` (CSRF-token header; write op, out of
+  scope for a read-only server). **Recommendation:** a `list_public_screens` tool (paginate
+  the 379, search by name/description locally) is genuinely additive — community-authored
+  screens you can run through the existing screener. Saved/`owner=true` is user-scoped and was
+  empty for the test account; lower value.
+
+### Still open
+
 - **`analyze_portfolio`**: in README, not in code.
 - Alternate-query entities aren't validated client-side; a typo'd product name returns empty results rather than an error (consistent with the site).
-- Field catalog "Productsp" entity type (seen in filters.js) is unexplored — likely product *sub-categories*.
+- Industry/location/raw-material checkbox→`aq`-token mapping (from the basic tab) not enumerated — only the *mechanism* (compiles to `advanced_search`) is documented.

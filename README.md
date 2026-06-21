@@ -121,9 +121,10 @@ A web search gives you unstructured pages. This gives Claude **structured, query
 | `list_popular_screens` | Browse Tijori's pre-built stock screens, grouped by category, with each screen's description and underlying query |
 | `screen_companies` | Run a popular screen by name (`preset`) or screen 5,000+ stocks with Tijori's full query language — `%` values, field-vs-field comparisons, arithmetic like `capex/Net Block > 0.5`, plus business-data queries (`alternate`) like `market share > 50` or `revenue from Defence > 50` |
 | `search_screener_fields` | Search the ~1,500-metric field catalog (with time-period variants like `3yr Avg ROCE`, `10Yrs ago PAT`) to find exact field names for `screen_companies` |
-| `analyze_portfolio` | Pass a list of company slugs — get back sector distribution, weighted avg PE/ROE/OPM, forensics spread, and promoter pledge flags across the whole portfolio |
 
 > v2 tools are functional but not yet stable — expect occasional breakage.
+>
+> **Planned (not yet implemented):** `analyze_portfolio` — pass a list of company slugs to get sector distribution, weighted avg PE/ROE/OPM, forensics spread, and promoter pledge flags across the whole portfolio.
 
 ---
 
