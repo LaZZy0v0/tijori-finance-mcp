@@ -6,7 +6,7 @@
 
 **India's first MCP server for Indian equity research.**
 
-Talk to 5,000+ NSE/BSE listed companies directly from Claude.
+Talk to 5,000+ NSE/BSE listed companies directly from Claude with India's equity research MCP
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-5A67D8?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
